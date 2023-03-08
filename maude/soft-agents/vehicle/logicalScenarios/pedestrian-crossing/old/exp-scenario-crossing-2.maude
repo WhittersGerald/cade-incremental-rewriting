@@ -1,0 +1,288 @@
+***( Case when there is a crash without specifying 
+explicitly a gap or positions.)
+ mod SCENARIO-CROSSING is
+ inc SCENARIO-TEMPLATE-VEH-PED .
+ 
+*** Define resolveKB
+*** Scenario where the vehicle in front is in
+*** constant speed, while the vehicle in the back is following.
+ vars numVars stp : Nat .
+vars b1 b2 b3 : Bool .
+var conf : Conf .
+var env : Env .
+var lkb : KB .
+var id0 : Id .
+vars ff0 ff1 ff2 ff3 : SymTerm .
+vars t t1 t2 n t3 t4 k : Nat .
+vars cond cond3 : Boolean . 
+vars smtRes1 smtRes2 smtRes3 : SmtCheckResult .
+var dtVal saferVal safeVal badVal : Real .
+
+
+eq lkb1 = 
+    class(v(1),veh) 
+    (atloc(v(1),loc(vposx,vposy)) @ 0)
+    (speed(v(1), vvel) @ 0) 
+    (dir(v(1),loc(vinix,viniy),
+              loc(vtarx,vtary),vmag) @ 0) 
+    (maxAcc(v(1),maxacc1)) 
+    (maxDec(v(1),maxdec1))
+    (mode(v(1),leading(none)) @ 0)
+    velb(v(1),vellb1,velub1)
+    (accel(v(1),acc1) @ 0)
+    (pedCaution(v(1),safe) @ 0)
+    gapSafety(v(1),safer,safe,bad) .
+
+eq lkbPed = 
+    class(v(2),pedestrian) 
+    (atloc(v(2),loc(pposx,pposy)) @ 0)
+    (speed(v(2), pvel) @ 0) 
+    (dir(v(2),loc(pinix,piniy),
+              loc(ptarx,ptary),pmag) @ 0)
+    velb(v(2),vellb2,velub2)
+    (accel(v(2),acc2) @ 0)
+    maxAcc(v(2),maxacc2)
+    maxDec(v(2),maxdec2) .
+
+eq ekb(numVars,cond,stp) =
+    clock(0) stop(stp)
+    lkb1 lkbPed
+    tickSize(dt)
+    (velb(v(1),vellb1,velub1))
+    (velb(v(2),vellb2,velub2))
+    constraint(numVars,cond) .
+
+--- red ekb(35,true,3) .
+
+*** Vehicle moving in a straight line on axis Y.
+*** Speed bounds
+*** Positive Positions
+ops basicCondPedX basicCondLine : -> Boolean .
+eq basicCondPedX = 
+  vposx === 5/1 and vposy >= 0/1 and
+  pposx === pinix and pposy === piniy and
+  pinix >= 0/1  and piniy >= vposy and
+  ptarx === 10/1  and ptary === piniy and
+  pmag === (ptarx - pinix) and 
+  (vvel >= vellb1) and (vvel <= velub1) and
+  (pvel >= vellb2) and (pvel <= velub2) and
+  (vinix === 0/1) and (viniy === 0/1) and
+  (vtarx === 0/1) and (vtary === 1/1) and
+  (acc1 >= maxdec1) and (acc1 <= maxacc1) and
+  (acc2 >= maxdec2) and (acc2 <= maxacc2) and
+  (vmag === 1/1) .
+
+eq basicCondLine 
+ = vposx === 5/1 and vposy >= 0/1 and
+  pposx === pinix and pposy === piniy and
+  pinix >= 0/1  and piniy >= vposy and
+  ptarx === 10/1  and ptary >= vposy and
+  ((pmag * pmag) === (ptary - piniy) * (ptary - piniy) 
+                + (ptarx - pinix) * (ptarx - pinix)) and 
+  (vvel >= vellb1) and (vvel <= velub1) and
+  (pvel >= vellb2) and (pvel <= velub2) and
+  (vinix === 0/1) and (viniy === 0/1) and
+  (vtarx === 0/1) and (vtary === 1/1) and
+  (acc1 >= maxdec1) and (acc1 <= maxacc1) and
+  (acc2 >= maxdec2) and (acc2 <= maxacc2) and
+  (vmag === 1/1) .
+
+op bounds : Real -> Boolean .
+eq bounds(dtVal) = 
+ (vellb1 === 2/1) and (velub1 === 10/1) and 
+ (vellb2 === 1/2) and (velub2 === 3/2) and
+ (maxacc1 === 6/1) and (maxdec1 === - 2/1) and 
+ (maxacc2 === 1/4) and (maxdec2 === - 1/4) and 
+ (safer === 3/1) and (safe === 2/1) and 
+ (bad === 1/1) and (dt === dtVal) 
+  and (pedSDist === 50/1) .
+
+op bounds : Real Real Real Real -> Boolean .
+eq bounds(saferVal,safeVal,badVal,dtVal)
+ = (vellb1 === 2/1) and (velub1 === 10/1) and 
+ (vellb2 === 1/2) and (velub2 === 3/2) and
+ (maxacc1 === 6/1) and (maxdec1 === - 2/1) and 
+ (maxacc2 === 1/4) and (maxdec2 === - 1/4) and 
+ (safer === saferVal) and (safe === safeVal) and 
+ (bad === badVal) and (dt === dtVal) 
+  and (pedSDist === 50/1) .
+
+
+ops asysPedXLine asysPedXLineFixed : Nat Real -> ASystem .
+eq asysPedXLine(stp,dtVal) 
+  = asysCrossing(35,basicCondPedX and bounds(dtVal),stp) .
+eq asysPedXLineFixed(stp,dtVal) 
+ = fixDynamics(asysPedXLine(stp,dtVal),getIds(asysPedXLine(stp,dtVal))) .
+
+ops asysPedXLine asysPedXLineFixed : Nat Real Real Real Real -> ASystem .
+eq asysPedXLine(stp,saferVal,safeVal,badVal,dtVal) 
+  = asysCrossing(35,basicCondPedX and bounds(saferVal,safeVal,badVal,dtVal),stp) .
+eq asysPedXLineFixed(stp,saferVal,safeVal,badVal,dtVal) 
+ = fixDynamics(asysPedXLine(stp,saferVal,safeVal,badVal,dtVal),getIds(asysPedXLine(stp,dtVal))) .
+
+
+ops asysPedStraight asysPedStraightFixed : Nat Real -> ASystem .
+eq asysPedStraight(stp,dtVal) 
+  = asysCrossing(35,basicCondLine and bounds(dtVal),stp) .
+eq asysPedStraightFixed(stp,dtVal) 
+ = fixDynamics(asysPedStraight(stp,dtVal),getIds(asysPedStraight(stp,dtVal))) .
+
+endm
+
+eof
+set print attribute on .
+red checkTimeDurSPtoSP1TimeStepsBot(saferSP,saferSP,asysPedXLineFixed(3,3/1,2/1,1/1,1/10),dt) .
+--- Strange...
+rewrites: 3621 in 8347ms cpu (8414ms real) (433 rewrites/second)
+result Bool: (false).Bool
+
+red checkTimeDurSPtoSP1TimeStepsBot(saferSP,saferSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 3609 in 182581ms cpu (183127ms real) (19 rewrites/second)
+result Bool: (false).Bool
+
+
+red checkTimeDurSPtoSP1TimeStepsBot(saferSP,safeSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 113787 in 8408365ms cpu (8417594ms real) (13 rewrites/second)
+result Bool: (true).Bool
+
+
+*** GOOD RESULT.
+red checkTimeDurSPtoSP1TimeStepsBot(unsafeSP,safeSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 114597 in 1029561ms cpu (1031988ms real) (111 rewrites/second)
+result Bool: (true).Bool
+
+
+
+red checkTimeDurSPtoSP1TimeStepsBot(unsafeSP,unsafeSP,asysPedXLineFixed(3,1/10),dt) .
+
+
+
+
+
+
+
+red checkTimeDurSPtoSP1TimeStepsBot(unsafeSP,unsafeSP,asysPedXLineFixed(3,3/1,2/1,1/1,1/10),dt) .
+rewrites: 3641 in 5659ms cpu (5699ms real) (643 rewrites/second)
+result Bool: (false).Bool
+
+
+*** Notice that checkTimeDur is still calling timestep and not timesteps.
+*** However checkTimeDurSPtoSP1Asys calls timesteps.
+--- maudez3 load-pedestrian.maude
+*** Check time property for dt = 1/10
+red checkTimeDur(asysPedXLine(3,1/10)) .
+
+red checkTimeDurSPtoSP1(saferSP,saferSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 4862 in 93536ms cpu (93888ms real) (51 rewrites/second)
+result Bool: (false).Bool
+
+red checkTimeDurSPtoSP1(saferSP,safeSP,asysPedXLineFixed(3,1/10),dt) .
+Started 10:24.
+--- DNF
+
+red checkTimeDurSPtoSP1Asys(saferSP,safeSP,asysPedXLineFixed(3,1/10),dt) .
+reduce in SCENARIO-CROSSING : checkTimeDurSPtoSP1Asys(saferSP, safeSP,
+    asysPedXLineFixed(3, 1/10), dt) .
+rewrites: 128046 in 4917246ms cpu (4929900ms real) (26 rewrites/second)
+result Bool: (true).Bool
+
+
+red checkTimeDurSPtoSP1Asys(safeSP,safeSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 127722 in 7026118ms cpu (7036420ms real) (18 rewrites/second)
+result Bool: (true).Bool
+
+set print attribute on .
+red checkTimeDurSPtoSP1Asys(safeSP,unsafeSP,asysPedXLineFixed(3,1/10),dt) .
+started: 13:55
+----DNF after 24h...
+
+red checkTimeDurSPtoSP1TimeStepsBot(safeSP,unsafeSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 114597 in 5540651ms cpu (5548615ms real) (20 rewrites/second)
+result Bool: (true).Bool
+
+red checkTimeDurSPtoSP1TimeStepsBot(safeSP,unsafeSP,asysPedXLineFixed(3,6/1,4/1,2/1,1/10),dt) .
+rewrites: 114597 in 7971614ms cpu (7980467ms real) (14 rewrites/second)
+result Bool: (true).Bool
+
+red checkTimeDurSPtoSP1Asys(unsafeSP,badSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 130854 in 47763233ms cpu (47800978ms real) (2 rewrites/second)
+result Bool: (true).Bool
+
+red checkTimeDurSPtoSP1Asys(unsafeSP,unsafeSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 126750 in 7204877ms cpu (7212040ms real) (17 rewrites/second)
+result Bool: (true).Bool
+
+red checkTimeDurSPtoSP1Asys(unsafeSP,safeSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 132474 in 945420ms cpu (946427ms real) (140 rewrites/second)
+result Bool: (true).Bool
+
+red checkTimeDurSPtoSP1AsysOneStep(unsafeSP,safeSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 114597 in 1029561ms cpu (1031988ms real) (111 rewrites/second)
+result Bool: (true).Bool
+
+
+red checkTimeDurSPtoSP1Asys(badSP,badSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 118569 in 123079ms cpu (123279ms real) (963 rewrites/second)
+result Bool: (true).Bool
+
+red checkTimeDurSPtoSP1Asys(badSP,unsafeSP,asysPedXLineFixed(3,1/10),dt) .
+rewrites: 125103 in 1688296ms cpu (1690037ms real) (74 rewrites/second)
+result Bool: (true).Bool
+-------------------------------------
+
+*** This is true because there are no transitions from safer to safer
+red checkTimeDurSPtoSP1(saferSP,saferSP,asysPedXLineFixed(3,100/1),dt) .
+rewrites: 4862 in 5294ms cpu (5324ms real) (918 rewrites/second)
+result Bool: (true).Bool
+*** This is true because there are no transitions from safer to safe
+red checkTimeDurSPtoSP1(saferSP,safeSP,asysPedXLineFixed(3,100/1),dt) .
+    asysPedXLineFixed(3, 100/1), dt) .
+rewrites: 4832 in 144ms cpu (146ms real) (33476 rewrites/second)
+result Bool: (true).Bool
+
+---------------------------------------------
+--- maudez3 load-pedestrian-timesteps.maude
+red checkTimeDur(asfixed) .
+
+
+op condGround : -> Boolean .
+
+op cond1 : -> Boolean .
+eq cond1 = 
+     vposx === 5/1 and
+     vposy === 0/1 and
+     pposx === pinix and
+     pposy === piniy and
+     vvel === 5/1 / tickSize and
+     pvel === 2/1 / tickSize and
+     pinix === 0/1 and
+     piniy <= 25/1 and
+     piniy >= 20/1 and
+     ptarx === 10/1 and
+     ptary === 25/1 and
+     pedSDist === 50/1 and
+     vinix === 5/1 and
+     viniy === 0/1 and
+     vtarx === 5/1 and
+     vtary === 1/1 and
+     ((pmag * pmag) === (ptary - piniy) * (ptary - piniy) 
+                + (ptarx - pinix) * (ptarx - pinix)) and
+     vmag === 1/1 and 
+     safer === 10/1 and 
+     safe === 5/1  and 
+     vellb1 === 1/1 / tickSize and
+     velub1 === 7/1 / tickSize and 
+     vellb2 === 1/1 / tickSize and
+     velub2 === 2/1 / tickSize and 
+     maxacc1 === 2/1 / tickSize  and
+     maxdec1 === 2/1 / tickSize and
+     maxacc2 === 0/1 / tickSize  and
+     maxdec2 === 0/1 / tickSize .
+
+  ops as1 as1safe : Nat -> ASystem .
+
+
+
+
+
+

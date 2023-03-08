@@ -1,0 +1,208 @@
+***( 
+This file contains the sorts and operators for the specification of scenarios.
+***)
+
+fmod CONFIG is
+  inc SYM-REAL .
+  inc SYM-INTEGER .
+  pr NAT .
+  inc STRING .
+
+
+--- Service, Intruder, Scheduler and Player identifier
+  sorts Sid Iid SchdId Pid .
+  subsort Sid Iid SchdId < Pid .
+  op S : Nat -> Sid [ctor] .
+  op I : Nat -> Iid [ctor] .
+  op SC : Nat -> SchdId [ctor] .
+
+  sort Prid . --- Protocol identifier
+  sort PridS .
+  subsort Prid < PridS .
+  op none : -> PridS [ctor] .
+  op __ : PridS PridS -> PridS [ctor assoc comm id: none] .
+
+  sort Nid . --- Node Identifier
+  op PR : Nat -> Prid [ctor] .
+  op ND : Nat -> Nid [ctor] .
+
+  op rr : Nat -> RSym .
+  op tt : Nat -> TimeSym .
+  op tw : Nat -> TimeSym .
+  op cur : -> TimeSym .
+
+
+--- Resources
+  sort Rid .
+  op R : Nat -> Rid [ctor] .
+
+  sort Resource ResourceS .
+  subsort Resource < ResourceS .
+  op res : Rid Nat -> Resource  [ctor] . --- identifier and amount of the resource
+  op none : -> ResourceS [ctor] .
+  op __ : ResourceS ResourceS -> ResourceS [ctor assoc comm id: none] .
+
+--- Messages (Using Sort for now)
+  sorts Msg MsgS .
+  subsort Msg < MsgS .
+  op none : -> MsgS [ctor] .
+  op __ : MsgS MsgS -> MsgS [ctor assoc comm id: none] .
+  op msg(_;_,_<-_) : TSymReal Prid Nat Event -> Msg [ctor] .
+
+  op getTime : Msg -> TSymReal .
+  eq getTime(msg(t:TSymReal ; pid:Prid,n:Nat <- ev:Event)) = t:TSymReal .
+
+--- Events
+  sort Event .
+  op recover : Pid RSymInt -> Event [ctor] .
+  op consume : RSymInt TSymReal -> Event [ctor] .
+  op timeout : RSymInt RSymInt -> Event [ctor] .
+
+--- Protocols  *** version_2
+  sorts Node NodeS .
+  subsort Node < NodeS .
+  op none : -> NodeS [ctor] .
+  op __ : NodeS NodeS -> NodeS [ctor assoc comm id: none] .
+
+  op q(_?_,_;_) : Nid RSymInt RSymInt TSymReal -> Node [ctor] .
+  *** State Parameters are:
+  *** - Name
+  *** - Resources needed by the service to keep the state
+  *** - Resources needed by the client to keep the state
+  *** - Timeout
+
+  sort NTransition NTransitionS .
+  subsort NTransition < NTransitionS .
+  op none : -> NTransitionS [ctor] .
+  op __ : NTransitionS NTransitionS -> NTransitionS [ctor assoc comm id: none] .
+  op <_?_,_;_->_ > : Nid RSymInt RSymInt TSymReal Nid -> NTransition [ctor] .
+  ---  < N1 ? R1, R2 ; T1, T2 --> N2   >
+  *** Transition Parameters
+  *** State Origin
+  *** Resources required by the service to carry out the transition
+  *** Resources required by the client to carry out the transition
+  *** Time to carry out transition, not being used.
+  *** Resulting state.
+
+  op complete : -> Nid [ctor] .
+  op protInit : Prid -> Node [ctor] .
+  op protTransitions : Prid -> NTransitionS [ctor] .
+  op protNodes : Prid -> NodeS .
+  op protNode : Nid NodeS -> Node .
+  op protComplete : Prid -> Nid [ctor] .
+
+  eq protNode(nid:Nid,  q(nid:Nid ? rs1:RSymInt, rs2:RSymInt ; T:TSymReal) nds:NodeS) = q(nid:Nid ? rs1:RSymInt, rs2:RSymInt ; T:TSymReal) .
+
+  sort PExec . --- Protocol Execution
+  sort PExecS .
+  subsort PExec < PExecS .
+  op none : -> PExec [ctor] .
+  op __ : PExecS PExecS -> PExecS [ctor assoc comm id: none] .
+  op px : Prid Nid RSymInt Nat  -> PExec [ctor] .
+
+--- Players
+  sorts Service Intruder  Scheduler Player .
+  subsort Service Intruder Scheduler < Player .
+  op [_,_|_|_|_] : Sid Nat PExecS PridS RSymInt -> Service [ctor] .
+  --- id counter timeout resources
+  op [_,_|_|_|_|_] : Iid Nat PExecS PridS RSymInt TimeSym -> Intruder [ctor] .
+  --- id counter recovery actions and resources
+--- Scheduler
+  op [_,_,_|_|_] : SchdId Nat Nat MsgS MsgS -> Scheduler [ctor] .
+  op getMsg1 : Scheduler -> MsgS .
+  op getMsg2 : Scheduler -> MsgS .
+  eq getMsg1([s:SchdId,n:Nat,m:Nat | msgs:MsgS | msgs2:MsgS ]) = msgs:MsgS .
+  eq getMsg2([s:SchdId,n:Nat,m:Nat | msgs:MsgS | msgs2:MsgS ]) = msgs2:MsgS .
+
+--- Configuration
+  sort PlayerConf .
+  subsort Player < PlayerConf .
+  op none : -> PlayerConf [ctor] .
+  op __ : PlayerConf PlayerConf -> PlayerConf [ctor assoc comm id: none] .
+
+  sort Marker MSet .
+  subsort Marker < MSet .
+  op none : -> MSet [ctor] .
+  op __ : MSet MSet -> MSet [ ctor assoc comm id: none ] .
+
+  op depleted : Sid RSymIntL TSymReal -> Marker [ctor] .
+
+  sort Config .
+  op _!_!_!_!_!_!_ : PlayerConf TimeSym MSet Boolean Boolean Nat Nat -> Config [ctor] .
+
+endfm
+
+
+mod META-TIME is
+  inc CONFIG .
+  inc META-LEVEL .
+  inc CONVERSION .
+
+  vars tr1 tr2 : TSymReal .
+  vars rr1 rr2 : RSymInt .
+  vars b1 b2 b : Boolean .
+  vars i : Nat .
+  vars tr res confT tcT : Term .
+  vars res? : [ResultPair] .
+  vars res1? : [ResultTriple] .
+  var tl : TermList .
+  var md : Module .
+  vars n n1 : Nat .
+  var bl : Bool .
+
+  op mkTimeSymVar : Nat -> Term .
+  eq mkTimeSymVar(i) = qid("rv" + string(i,10) + ":Real") .
+
+  op mkRSymVar : Nat -> Term .
+  eq mkRSymVar(i) = qid("iv" + string(i,10) + ":Integer") .
+
+  op toVarsR : TSymReal -> Term .
+  op toVarsB : Boolean -> Term .
+  op toVarsI : RSymInt -> Term .
+
+ eq toVarsR(r:Real) = upTerm(r:Real) .
+ eq toVarsR(tt(i)) = mkTimeSymVar(i) .
+ eq toVarsR(tw(i)) = mkTimeSymVar(i + 10000) .
+ eq toVarsR(- tr1) = '-_[toVarsR(tr1)] .
+ eq toVarsR(tr1 + tr2) = '_+_[toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsR(tr1 * tr2) = '_*_[toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsR(tr1 - tr2) = '_-_[toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsR(tr1 / tr2) = '_/_[toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsR(b ? tr1 : tr2) = '_?_:_[toVarsB(b),toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsR(toReal(toInt(tr1))) = 'toReal['toInteger[toVarsR(tr1)]] .
+
+ eq toVarsI(int:Integer) = upTerm(int:Integer) .
+ eq toVarsI(rr(i)) = mkRSymVar(i) .
+ eq toVarsI(- rr1) = '-_[toVarsI(rr1)] .
+ eq toVarsI(rr1 + rr2) = '_+_[toVarsI(rr1),toVarsI(rr2)] .
+ eq toVarsI(rr1 * rr2) = '_*_[toVarsI(rr1),toVarsI(rr2)] .
+ eq toVarsI(rr1 - rr2) = '_-_[toVarsI(rr1),toVarsI(rr2)] .
+ eq toVarsI(rr1 div rr2) = '_div_[toVarsI(rr1),toVarsI(rr2)] .
+ eq toVarsI(b ? rr1 : rr2) = '_?_:_[toVarsB(b),toVarsI(rr1),toVarsI(rr2)] .
+
+ eq toVarsB(b) = upTerm(b) [owise] .
+
+ eq toVarsB(tr1 <= tr2) = '_<=_[toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsB(tr1 >= tr2) = '_>=_[toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsB(tr1 < tr2) = '_<_[toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsB(tr1 > tr2) = '_>_[toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsB(tr1 === tr2) = '_===_[toVarsR(tr1),toVarsR(tr2)] .
+ eq toVarsB(tr1 =/== tr2) = '_=/==_[toVarsR(tr1),toVarsR(tr2)] .
+
+ eq toVarsB(rr1 <= rr2) = '_<=_[toVarsI(rr1),toVarsI(rr2)] .
+ eq toVarsB(rr1 >= rr2) = '_>=_[toVarsI(rr1),toVarsI(rr2)] .
+ eq toVarsB(rr1 < rr2) = '_<_[toVarsI(rr1),toVarsI(rr2)] .
+ eq toVarsB(rr1 > rr2) = '_>_[toVarsI(rr1),toVarsI(rr2)] .
+ eq toVarsB(rr1 === rr2) = '_===_[toVarsI(rr1),toVarsI(rr2)] .
+ eq toVarsB(rr1 =/== rr2) = '_=/==_[toVarsI(rr1),toVarsI(rr2)] .
+
+ eq toVarsB(b1 and b2) = '_and_[toVarsB(b1),toVarsB(b2)] .
+ eq toVarsB(b1 or b2) = '_or_[toVarsB(b1),toVarsB(b2)] .
+ eq toVarsB(b1 xor b2) = '_xor_[toVarsB(b1),toVarsB(b2)] .
+ eq toVarsB(b1 implies b2) = '_implies_[toVarsB(b1),toVarsB(b2)] .
+ eq toVarsB(b1 === b2) = '_===_[toVarsB(b1),toVarsB(b2)] .
+ eq toVarsB(b1 =/== b2) = '_=/==_[toVarsB(b1),toVarsB(b2)] .
+ eq toVarsB(b ? b1 : b2) = '_?_:_[toVarsB(b),toVarsB(b1),toVarsB(b2)] .
+ eq toVarsB(not b1) = 'not_[toVarsB(b1)] .
+
+endm

@@ -1,0 +1,128 @@
+***( 
+This file contains the modules formalizing the symbolic language used by the machinery that include:
+   * symbol sorts and operators
+   * symbolic arithmetic constraints
+   * symbol substitution functions
+***)
+
+load smt
+
+fmod SYM-REAL is
+  pr REAL .
+  pr REAL-INTEGER .
+
+  vars tt1 tt2 tt3 : TimeSym .
+  vars tr1 tr2 tr0 : TSymReal .
+  var r : Real .
+  var b : Boolean .
+
+  sort TimeSym TSymReal .
+  subsort TimeSym Real < TSymReal .
+
+  op _<=_ : TSymReal TSymReal -> Boolean  [ditto] .
+  op _>=_ : TSymReal TSymReal -> Boolean  [ditto] .
+  op _>_ : TSymReal TSymReal -> Boolean [ditto] .
+  op _<_ : TSymReal TSymReal -> Boolean [ditto] .
+  op _===_ : TSymReal TSymReal -> Boolean [ditto] .
+  op _=/==_ : TSymReal TSymReal -> Boolean [ditto] .
+
+  op -_ : TSymReal -> TSymReal [ditto] .
+  op _+_ : TSymReal TSymReal -> TSymReal [ditto] .
+  op _*_ : TSymReal TSymReal -> TSymReal [ditto] .
+  op _-_ : TSymReal TSymReal -> TSymReal [ditto] .
+  op _/_ : TSymReal TSymReal -> TSymReal [ditto] .
+  op _?_:_ : Boolean TSymReal TSymReal -> TSymReal [ditto] .
+
+  op toReal : TimeSym -> TSymReal [ctor] .
+  op toInt : TSymReal -> TimeSym [ctor] .
+
+  op tsubr : TimeSym TSymReal TSymReal -> TSymReal .
+  op tsubb : TimeSym TSymReal Boolean -> Boolean .
+
+
+  eq tsubr(tt1,tr0,tt1) = tr0 .
+  eq tsubr(tt1,tr0,- tr1) = - tsubr(tt1,tr0,tr1) .
+  eq tsubr(tt1,tr0,tr1 + tr2) =
+       tsubr(tt1,tr0,tr1) + tsubr(tt1,tr0,tr2) .
+  eq tsubr(tt1,tr0,tr1 * tr2) =
+       tsubr(tt1,tr0,tr1) * tsubr(tt1,tr0,tr2) .
+  eq tsubr(tt1,tr0,tr1 - tr2) =
+       tsubr(tt1,tr0,tr1) - tsubr(tt1,tr0,tr2) .
+  eq tsubr(tt1,tr0,tr1 / tr2) =
+       tsubr(tt1,tr0,tr1) / tsubr(tt1,tr0,tr2) .
+  eq tsubr(tt1,tr0,b ? tr1 : tr2) =
+       tsubb(tt1,tr0,b) ?
+         tsubr(tt1,tr0,tr1) : tsubr(tt1,tr0,tr2) .
+  eq tsubr(tt1,tr0,toReal(toInt(tr1))) =
+     toReal(toInt(tsubr(tt1,tr0,tr1))) .
+  eq tsubr(tt1,tr0,tr1) = tr1 [owise] .
+
+  eq tsubb(tt1,tr0,tr1 <= tr2) =
+    tsubr(tt1,tr0,tr1) <= tsubr(tt1,tr0,tr2) .
+  eq tsubb(tt1,tr0,tr1 >= tr2) =
+    tsubr(tt1,tr0,tr1) >= tsubr(tt1,tr0,tr2) .
+  eq tsubb(tt1,tr0,tr1 > tr2) =
+    tsubr(tt1,tr0,tr1) > tsubr(tt1,tr0,tr2) .
+  eq tsubb(tt1,tr0,tr1 === tr2) =
+    tsubr(tt1,tr0,tr1) === tsubr(tt1,tr0,tr2) .
+  eq tsubb(tt1,tr0,tr1 =/== tr2) =
+    tsubr(tt1,tr0,tr1) =/== tsubr(tt1,tr0,tr2) .
+  eq tsubb(tt1,tr0,b) = b [owise] .
+
+    --- Assuming that r is positive!
+  op simplify : Boolean -> Boolean .
+  eq simplify(false and b) = false .
+  eq simplify((tt1 > tt1 + r) and b) = false .
+  eq simplify((tt1 >= tt1 + r) and b) = false .
+  eq simplify((tt1 + r < tt1) and b) = false .
+  eq simplify((tt1 + r <= tt1) and b) = false .
+  eq simplify((tt1 === tt1 + r) and b) = false .
+  eq simplify((tt1 <= tt1 + r) and b) = simplify(b) .
+  eq simplify((tt1 < tt1 + r) and b) = simplify(b) .
+  eq simplify((tt1 + r > tt1) and b) = simplify(b) .
+  eq simplify((tt1 + r >= tt1) and b) = simplify(b) .
+  eq simplify((tt1 === tt1) and b) = simplify(b) .
+  eq simplify((tt1 === tt2 + 0/1) and b) = simplify((tt1 === tt2) and b) .
+  eq simplify((tt1 >= tt2 + 0/1) and b) = tt1 >= tt2 and b .
+  eq simplify((tt1 > tt2 + 0/1) and b) = tt1 > tt2 and b .
+  eq simplify((tt1 >= tt2 + r) and (tt1 >= tt2) and b) =
+             (tt1 >= tt2 + r) and b .
+  eq simplify((tt1 >= tt2) and (tt1 >= tt2 + r) and b) =
+             (tt1 >= tt2 + r) and b .
+
+  eq simplify(b) = b [owise] .
+
+
+endfm
+
+fmod SYM-INTEGER is
+  pr INTEGER .
+  pr REAL-INTEGER .
+
+  vars rr1 rr2 rr3 : RSym .
+  vars ri1 ri2 ri3 : RSymInt .
+  var int : Integer .
+  var b : Boolean .
+
+  sorts RSym RSymInt RSymIntL .
+  subsort RSym Integer < RSymInt .
+  subsort RSymInt < RSymIntL .
+  op nil : -> RSymIntL [ctor] .
+  op _;_ : RSymIntL RSymIntL -> RSymIntL [ctor assoc id: nil] .
+
+  op _<=_ : RSymInt RSymInt -> Boolean  [ditto] .
+  op _>=_ : RSymInt RSymInt -> Boolean  [ditto] .
+  op _>_ : RSymInt RSymInt -> Boolean [ditto] .
+  op _<_ : RSymInt RSymInt -> Boolean [ditto] .
+  op _===_ : RSymInt RSymInt -> Boolean [ditto] .
+  op _=/==_ : RSymInt RSymInt -> Boolean [ditto] .
+
+  op -_ : RSymInt -> RSymInt [ditto] .
+  op _+_ : RSymInt RSymInt -> RSymInt [ditto] .
+  op _*_ : RSymInt RSymInt -> RSymInt [ditto] .
+  op _-_ : RSymInt RSymInt -> RSymInt [ditto] .
+  op _div_ : RSymInt RSymInt -> RSymInt [ditto] .
+  ---op _mod_ : RSymInt RSymInt -> RSymInt [ditto] .
+  op _?_:_ : Boolean RSymInt RSymInt -> RSymInt [ditto] .
+
+endfm

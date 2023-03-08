@@ -1,0 +1,359 @@
+mod TLS-RENEGOTIATION is
+  inc EXE .
+
+  vars pxsB msgs1B : Nat .
+
+  ops tls1 tls2 tls3 tls4 : Nat Nat -> Config .
+
+  eq rMin = 0 .
+
+  op Threshold : -> TSymReal .
+  eq Threshold = tw(3) .
+
+**** States:
+*** ND(0): initial state
+*** ND(1): Has fresh key
+*** ND(2): Key renegotiation
+
+*** Transitions:
+*** T1: ND(0) --> ND(1): Generates a key
+*** T2: N(1) --> ND(2): Renegotiates a key
+*** T3: N(2) --> ND(1): Has fresh key
+
+eq protInit( PR(1) ) = q(ND(0) ? rr(1), rr(2) ; tw(1) ) .
+
+*** Typical values
+*** rr(1) == 0 and rr(2) == 1
+*** rr(3) == 1 and rr(4) == 0
+*** rr(5) == 10 and rr(6) == 0
+*** tw(1) = 1000
+*** tw(2) = 1000
+*** tw(3) = 10 
+  --- the protocol is supposed to timeout or move to has key
+  --- In this way we model that some protocol shall move forward.
+  --- Could be seen as a critical state definition.
+
+
+eq protNodes( PR(1)  ) 
+   = q(ND(0) ? rr(1), rr(2) ; tw(1) )
+     q(ND(1) ? rr(3), rr(4) ; tw(2) ) 
+     q(ND(2) ? rr(5), rr(6) ; tw(3) ) .
+
+*** Typical values
+*** rr(7) == rr(9) == rr(11) == 0
+*** rr(8) == rr(10) == rr(12) == 1
+
+eq protTransitions( PR(1)   ) 
+   = < ND(0) ? rr(7), rr(8) ; tw(4) -> ND(1) >
+     < ND(1) ? rr(9), rr(10) ; tw(5) -> ND(2) >
+     < ND(2) ? rr(11), rr(12) ; tw(6) -> ND(1) > .
+
+eq tls1(pxsB,msgs1B) 
+ = [ I(0), 0 | none | PR(1) | rr(13) | tw(4) ]
+   [ S(0), 0 | none | PR(1) | rr(14) ]
+   [ SC(0), 15 , 0 | none | none ] ! tt(4) 
+   ! none !
+   ( ( tt(4) >= 0/1   ) and
+   ( ( tw(4) === 10/1 ) and
+   ( ( tw(1) === 1000/1 ) and
+   ( ( tw(2) === 1000/1  ) and
+   ( ( tw(3) === 10/1   )  and (true)))))) !
+   ( ( rr(1) === 0  )  and
+   ( ( rr(2) === 1  )  and
+   ( ( rr(3) === 1 ) and
+   ( ( rr(4) === 0 ) and
+   ( ( rr(5) === 10 ) and
+   ( ( rr(6) === 0 ) and
+   ( ( rr(7) === 0 ) and
+   ( ( rr(8) === 1 ) and
+   ( ( rr(9) === 0 ) and
+   ( ( rr(10) === 1 ) and
+   ( ( rr(11) === 0 ) and
+   ( ( rr(12) === 1 ) and
+   ( ( rr(13) === 100 ) and
+   ( ( rr(14) === 100 ) 
+       and (true)))))))))))))))
+   ! pxsB ! msgs1B .
+
+eq tls2(pxsB,msgs1B) 
+ = [ I(0), 0 | none | PR(1) | rr(13) | tw(4) ]
+   [ S(0), 0 | none | PR(1) | rr(14) ]
+   [ SC(0), 15 , 0 | none | none ] ! tt(4) 
+   ! none !
+   ( ( tt(4) >= 0/1   ) and
+   ( ( tw(4) === 10/1 ) and
+   ( ( tw(1) === 1000/1 ) and
+   ( ( tw(2) === 1000/1  ) and
+   ( ( tw(3) === 10/1   )  and (true)))))) !
+   ( ( rr(1) === 0  )  and
+   ( ( rr(2) === 1  )  and
+   ( ( rr(3) === 1 ) and
+   ( ( rr(4) === 0 ) and
+   ( ( rr(5) === 10 ) and
+   ( ( rr(6) === 0 ) and
+   ( ( rr(7) === 0 ) and
+   ( ( rr(8) === 1 ) and
+   ( ( rr(9) === 0 ) and
+   ( ( rr(10) === 1 ) and
+   ( ( rr(11) === 0 ) and
+   ( ( rr(12) === 1 ) and
+   ( ( rr(13) === 100 ) and
+   ( ( rr(14) === 200 ) 
+       and (true)))))))))))))))
+   ! pxsB ! msgs1B .
+
+eq tls3(pxsB,msgs1B) 
+ = [ I(0), 0 | none | PR(1) | rr(13) | tw(4) ]
+   [ S(0), 0 | none | PR(1) | rr(14) ]
+   [ SC(0), 15 , 0 | none | none ] ! tt(4) 
+   ! none !
+   ( ( tt(4) >= 0/1   ) and
+   ( ( tw(4) === 10/1 ) and
+   ( ( tw(1) === 1000/1 ) and
+   ( ( tw(2) === 1000/1  ) and
+   ( ( tw(3) === 10/1   )  and (true)))))) !
+   ( ( rr(1) === 0  )  and
+   ( ( rr(2) === 1  )  and
+   ( ( rr(3) === 1 ) and
+   ( ( rr(4) === 0 ) and
+   ( ( rr(5) === 10 ) and
+   ( ( rr(6) === 0 ) and
+   ( ( rr(7) === 0 ) and
+   ( ( rr(8) === 1 ) and
+   ( ( rr(9) === 0 ) and
+   ( ( rr(10) === 1 ) and
+   ( ( rr(11) === 0 ) and
+   ( ( rr(12) === 1 ) and
+   ( ( rr(13) === 100 ) and
+   ( ( rr(14) === 300 ) 
+       and (true)))))))))))))))
+   ! pxsB ! msgs1B .
+
+endm
+
+eof
+
+================== No Bounds ==================
+
+search [1] in TLS-RENEGOTIATION : tls1(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 49)
+states: 50  rewrites: 54644 in 857ms cpu (864ms real) (63760 rewrites/second)
+conf:Config --> ([S(0),2 | px(PR(1), ND(1), rr(17), 0) | PR(1) | rr(21)] [SC(0),27,1 | none | msg(tt(6) + tw(2) ; PR(1),0 <- timeout(rr(25), rr(23)))] [I(0),3 |
+    px(PR(1), ND(1), rr(17), 0) | PR(1) | rr(26) | tw(4)]) ! tt(7) ! depleted(S(0), rr(21), tt(6)) ! tt(7) < tt(6) + tw(2) and (tt(7) >= (0/1).Real and (tt(7) >=
+    tt(6) and (tt(7) >= tt(6) + tw(4) and (tt(5) + tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (
+    tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (1000/1).Real and (tw(2) === (1000/1).Real and (tw(3) === (10/1).Real and true))))))))))))) !
+    rr(20) + rr(22) === rr(26) and (rr(22) === rr(8) * rr(17) and (rr(23) === rr(4) * rr(17) and (rr(15) + rr(18) - rr(22) - rr(23) === rr(20) and (rr(20) >= (
+    0).Integer and (rr(24) === rr(7) * rr(17) and (rr(25) === rr(3) * rr(17) and (rr(16) + rr(19) - rr(24) - rr(25) === rr(21) and (rr(21) >= (0).Integer and (
+    rr(17) > (0).Integer and (rr(18) === rr(2) * rr(17) and (rr(13) - rr(18) === rr(15) and (rr(15) >= (0).Integer and (rr(19) === rr(1) * rr(17) and (rr(14) -
+    rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(1) === (0).Integer and (rr(2) === (1).Integer and (rr(3) === (1).Integer and (rr(4) === (0).Integer and
+    (rr(5) === (10).Integer and (rr(6) === (0).Integer and (rr(7) === (0).Integer and (rr(8) === (1).Integer and (rr(9) === (0).Integer and (rr(10) === (
+    1).Integer and (rr(11) === (0).Integer and (rr(12) === (1).Integer and (rr(13) === (100).Integer and (rr(14) === (100).Integer and
+    true))))))))))))))))))))))))))))) ! 0 ! 0
+
+-----------------------------------------------
+
+search [1] in TLS-RENEGOTIATION : tls2(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 23044)
+states: 23045  rewrites: 79099387 in 831661ms cpu (835283ms real) (95110 rewrites/second)
+conf:Config --> ([S(0),4 | px(PR(1), ND(1), rr(17), 0) px(PR(1), ND(1), rr(29), 1) | PR(1) | rr(33)] [SC(0),39,2 |
+    none | msg(tt(6) + tw(2) ; PR(1),0 <- timeout(rr(25), rr(23))) msg(tt(9) + tw(2) ; PR(1),1 <- timeout(rr(37),
+    rr(35)))] [I(0),6 | px(PR(1), ND(1), rr(17), 0) px(PR(1), ND(1), rr(29), 1) | PR(1) | rr(38) | tw(4)]) ! tt(10)
+    ! depleted(S(0), rr(33), tt(9)) ! tt(10) < tt(6) + tw(2) and (tt(10) < tt(9) + tw(2) and (tt(10) >= (0/1).Real
+    and (tt(10) >= tt(9) and (tt(10) >= tt(9) + tw(4) and (tt(9) < tt(6) + tw(2) and (tt(8) + tw(1) > tt(9) and (tt(
+    9) >= (0/1).Real and (tt(9) >= tt(8) and (tt(8) < tt(6) + tw(2) and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and
+    (tt(7) < tt(6) + tw(2) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(7) >= tt(6) + tw(4) and (tt(5) + tw(
+    1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4)
+    >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (1000/1).Real and (tw(2) === (1000/1).Real and (tw(3)
+    === (10/1).Real and true))))))))))))))))))))))))) ! rr(32) + rr(34) === rr(38) and (rr(34) === rr(8) * rr(29)
+    and (rr(35) === rr(4) * rr(29) and (rr(27) + rr(30) - rr(34) - rr(35) === rr(32) and (rr(32) >= (0).Integer and
+    (rr(36) === rr(7) * rr(29) and (rr(37) === rr(3) * rr(29) and (rr(28) + rr(31) - rr(36) - rr(37) === rr(33) and
+    (rr(33) >= (0).Integer and (rr(29) > (0).Integer and (rr(30) === rr(2) * rr(29) and (rr(26) - rr(30) === rr(27)
+    and (rr(27) >= (0).Integer and (rr(31) === rr(1) * rr(29) and (rr(21) - rr(31) === rr(28) and (rr(28) >= (
+    0).Integer and (rr(20) + rr(22) === rr(26) and (rr(22) === rr(8) * rr(17) and (rr(23) === rr(4) * rr(17) and (
+    rr(15) + rr(18) - rr(22) - rr(23) === rr(20) and (rr(20) >= (0).Integer and (rr(24) === rr(7) * rr(17) and (rr(
+    25) === rr(3) * rr(17) and (rr(16) + rr(19) - rr(24) - rr(25) === rr(21) and (rr(21) >= (0).Integer and (rr(17)
+    > (0).Integer and (rr(18) === rr(2) * rr(17) and (rr(13) - rr(18) === rr(15) and (rr(15) >= (0).Integer and (rr(
+    19) === rr(1) * rr(17) and (rr(14) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(1) === (0).Integer and
+    (rr(2) === (1).Integer and (rr(3) === (1).Integer and (rr(4) === (0).Integer and (rr(5) === (10).Integer and (
+    rr(6) === (0).Integer and (rr(7) === (0).Integer and (rr(8) === (1).Integer and (rr(9) === (0).Integer and (rr(
+    10) === (1).Integer and (rr(11) === (0).Integer and (rr(12) === (1).Integer and (rr(13) === (100).Integer and (
+    rr(14) === (200).Integer and true))))))))))))))))))))))))))))))))))))))))))))) ! 0 ! 0
+
+-------------------------------
+
+search [1] in TLS-RENEGOTIATION : tls3(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+DNF
+
+================= Bound Msgs1 =================
+
+search [1] in TLS-RENEGOTIATION : tls1(0,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 35)
+states: 36  rewrites: 49041 in 853ms cpu (864ms real) (57474 rewrites/second)
+conf:Config --> ([S(0),2 | px(PR(1), ND(1), rr(17), 0) | PR(1) | rr(21)] [SC(0),27,1 | none | msg(tt(6) + tw(2) ;
+    PR(1),0 <- timeout(rr(25), rr(23)))] [I(0),3 | px(PR(1), ND(1), rr(17), 0) | PR(1) | rr(26) | tw(4)]) ! tt(7) !
+    depleted(S(0), rr(21), tt(6)) ! tt(7) < tt(6) + tw(2) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(7) >=
+    tt(6) + tw(4) and (tt(5) + tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real
+    and (tt(5) >= tt(4) and (tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (1000/1).Real and (tw(2)
+    === (1000/1).Real and (tw(3) === (10/1).Real and true))))))))))))) ! rr(20) + rr(22) === rr(26) and (rr(22) ===
+    rr(8) * rr(17) and (rr(23) === rr(4) * rr(17) and (rr(15) + rr(18) - rr(22) - rr(23) === rr(20) and (rr(20) >= (
+    0).Integer and (rr(24) === rr(7) * rr(17) and (rr(25) === rr(3) * rr(17) and (rr(16) + rr(19) - rr(24) - rr(25)
+    === rr(21) and (rr(21) >= (0).Integer and (rr(17) > (0).Integer and (rr(18) === rr(2) * rr(17) and (rr(13) - rr(
+    18) === rr(15) and (rr(15) >= (0).Integer and (rr(19) === rr(1) * rr(17) and (rr(14) - rr(19) === rr(16) and (
+    rr(16) >= (0).Integer and (rr(1) === (0).Integer and (rr(2) === (1).Integer and (rr(3) === (1).Integer and (rr(
+    4) === (0).Integer and (rr(5) === (10).Integer and (rr(6) === (0).Integer and (rr(7) === (0).Integer and (rr(8)
+    === (1).Integer and (rr(9) === (0).Integer and (rr(10) === (1).Integer and (rr(11) === (0).Integer and (rr(12)
+    === (1).Integer and (rr(13) === (100).Integer and (rr(14) === (100).Integer and
+    true))))))))))))))))))))))))))))) ! 0 ! 1
+
+--------------------------
+
+search [1] in TLS-RENEGOTIATION : tls2(0,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 8855)
+states: 8856  rewrites: 63665235 in 671156ms cpu (674050ms real) (94858 rewrites/second)
+conf:Config --> ([S(0),4 | px(PR(1), ND(1), rr(17), 0) px(PR(1), ND(1), rr(29), 1) | PR(1) | rr(33)] [SC(0),39,2 |
+    none | msg(tt(6) + tw(2) ; PR(1),0 <- timeout(rr(25), rr(23))) msg(tt(9) + tw(2) ; PR(1),1 <- timeout(rr(37),
+    rr(35)))] [I(0),6 | px(PR(1), ND(1), rr(17), 0) px(PR(1), ND(1), rr(29), 1) | PR(1) | rr(38) | tw(4)]) ! tt(10)
+    ! depleted(S(0), rr(33), tt(9)) ! tt(10) < tt(6) + tw(2) and (tt(10) < tt(9) + tw(2) and (tt(10) >= (0/1).Real
+    and (tt(10) >= tt(9) and (tt(10) >= tt(9) + tw(4) and (tt(9) < tt(6) + tw(2) and (tt(8) + tw(1) > tt(9) and (tt(
+    9) >= (0/1).Real and (tt(9) >= tt(8) and (tt(8) < tt(6) + tw(2) and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and
+    (tt(7) < tt(6) + tw(2) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(7) >= tt(6) + tw(4) and (tt(5) + tw(
+    1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4)
+    >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (1000/1).Real and (tw(2) === (1000/1).Real and (tw(3)
+    === (10/1).Real and true))))))))))))))))))))))))) ! rr(32) + rr(34) === rr(38) and (rr(34) === rr(8) * rr(29)
+    and (rr(35) === rr(4) * rr(29) and (rr(27) + rr(30) - rr(34) - rr(35) === rr(32) and (rr(32) >= (0).Integer and
+    (rr(36) === rr(7) * rr(29) and (rr(37) === rr(3) * rr(29) and (rr(28) + rr(31) - rr(36) - rr(37) === rr(33) and
+    (rr(33) >= (0).Integer and (rr(29) > (0).Integer and (rr(30) === rr(2) * rr(29) and (rr(26) - rr(30) === rr(27)
+    and (rr(27) >= (0).Integer and (rr(31) === rr(1) * rr(29) and (rr(21) - rr(31) === rr(28) and (rr(28) >= (
+    0).Integer and (rr(20) + rr(22) === rr(26) and (rr(22) === rr(8) * rr(17) and (rr(23) === rr(4) * rr(17) and (
+    rr(15) + rr(18) - rr(22) - rr(23) === rr(20) and (rr(20) >= (0).Integer and (rr(24) === rr(7) * rr(17) and (rr(
+    25) === rr(3) * rr(17) and (rr(16) + rr(19) - rr(24) - rr(25) === rr(21) and (rr(21) >= (0).Integer and (rr(17)
+    > (0).Integer and (rr(18) === rr(2) * rr(17) and (rr(13) - rr(18) === rr(15) and (rr(15) >= (0).Integer and (rr(
+    19) === rr(1) * rr(17) and (rr(14) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(1) === (0).Integer and
+    (rr(2) === (1).Integer and (rr(3) === (1).Integer and (rr(4) === (0).Integer and (rr(5) === (10).Integer and (
+    rr(6) === (0).Integer and (rr(7) === (0).Integer and (rr(8) === (1).Integer and (rr(9) === (0).Integer and (rr(
+    10) === (1).Integer and (rr(11) === (0).Integer and (rr(12) === (1).Integer and (rr(13) === (100).Integer and (
+    rr(14) === (200).Integer and true))))))))))))))))))))))))))))))))))))))))))))) ! 0 ! 1
+
+-----------------------
+
+search [1] in TLS-RENEGOTIATION : tls3(0,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+DNF
+
+==================== Bounding pxs ==================
+
+search [1] in TLS-RENEGOTIATION : tls1(1,0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 21)
+states: 22  rewrites: 17743 in 232ms cpu (234ms real) (76439 rewrites/second)
+conf:Config --> ([S(0),2 | px(PR(1), ND(1), rr(17), 0) | PR(1) | rr(21)] [SC(0),27,1 | none | msg(tt(6) + tw(2) ;
+    PR(1),0 <- timeout(rr(25), rr(23)))] [I(0),3 | px(PR(1), ND(1), rr(17), 0) | PR(1) | rr(26) | tw(4)]) ! tt(7) !
+    depleted(S(0), rr(21), tt(6)) ! tt(7) < tt(6) + tw(2) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(7) >=
+    tt(6) + tw(4) and (tt(5) + tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real
+    and (tt(5) >= tt(4) and (tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (1000/1).Real and (tw(2)
+    === (1000/1).Real and (tw(3) === (10/1).Real and true))))))))))))) ! rr(20) + rr(22) === rr(26) and (rr(22) ===
+    rr(8) * rr(17) and (rr(23) === rr(4) * rr(17) and (rr(15) + rr(18) - rr(22) - rr(23) === rr(20) and (rr(20) >= (
+    0).Integer and (rr(24) === rr(7) * rr(17) and (rr(25) === rr(3) * rr(17) and (rr(16) + rr(19) - rr(24) - rr(25)
+    === rr(21) and (rr(21) >= (0).Integer and (rr(17) > (0).Integer and (rr(18) === rr(2) * rr(17) and (rr(13) - rr(
+    18) === rr(15) and (rr(15) >= (0).Integer and (rr(19) === rr(1) * rr(17) and (rr(14) - rr(19) === rr(16) and (
+    rr(16) >= (0).Integer and (rr(1) === (0).Integer and (rr(2) === (1).Integer and (rr(3) === (1).Integer and (rr(
+    4) === (0).Integer and (rr(5) === (10).Integer and (rr(6) === (0).Integer and (rr(7) === (0).Integer and (rr(8)
+    === (1).Integer and (rr(9) === (0).Integer and (rr(10) === (1).Integer and (rr(11) === (0).Integer and (rr(12)
+    === (1).Integer and (rr(13) === (100).Integer and (rr(14) === (100).Integer and
+    true))))))))))))))))))))))))))))) ! 1 ! 0
+
+--------------------------------
+
+search [1] in TLS-RENEGOTIATION : tls2(1,0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+DNF
+
+-----------------------
+--- 6:41
+search [1] in TLS-RENEGOTIATION : tls2(2,0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 5076)
+states: 5077  rewrites: 11680743 in 127817ms cpu (128562ms real) (91386 rewrites/second)
+conf:Config --> ([S(0),4 | px(PR(1), ND(1), rr(17), 0) px(PR(1), ND(1), rr(29), 1) | PR(1) | rr(33)] [SC(0),39,2 |
+    none | msg(tt(6) + tw(2) ; PR(1),0 <- timeout(rr(25), rr(23))) msg(tt(9) + tw(2) ; PR(1),1 <- timeout(rr(37),
+    rr(35)))] [I(0),6 | px(PR(1), ND(1), rr(17), 0) px(PR(1), ND(1), rr(29), 1) | PR(1) | rr(38) | tw(4)]) ! tt(10)
+    ! depleted(S(0), rr(33), tt(9)) ! tt(10) < tt(6) + tw(2) and (tt(10) < tt(9) + tw(2) and (tt(10) >= (0/1).Real
+    and (tt(10) >= tt(9) and (tt(10) >= tt(9) + tw(4) and (tt(9) < tt(6) + tw(2) and (tt(8) + tw(1) > tt(9) and (tt(
+    9) >= (0/1).Real and (tt(9) >= tt(8) and (tt(8) < tt(6) + tw(2) and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and
+    (tt(7) < tt(6) + tw(2) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(7) >= tt(6) + tw(4) and (tt(5) + tw(
+    1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4)
+    >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (1000/1).Real and (tw(2) === (1000/1).Real and (tw(3)
+    === (10/1).Real and true))))))))))))))))))))))))) ! rr(32) + rr(34) === rr(38) and (rr(34) === rr(8) * rr(29)
+    and (rr(35) === rr(4) * rr(29) and (rr(27) + rr(30) - rr(34) - rr(35) === rr(32) and (rr(32) >= (0).Integer and
+    (rr(36) === rr(7) * rr(29) and (rr(37) === rr(3) * rr(29) and (rr(28) + rr(31) - rr(36) - rr(37) === rr(33) and
+    (rr(33) >= (0).Integer and (rr(29) > (0).Integer and (rr(30) === rr(2) * rr(29) and (rr(26) - rr(30) === rr(27)
+    and (rr(27) >= (0).Integer and (rr(31) === rr(1) * rr(29) and (rr(21) - rr(31) === rr(28) and (rr(28) >= (
+    0).Integer and (rr(20) + rr(22) === rr(26) and (rr(22) === rr(8) * rr(17) and (rr(23) === rr(4) * rr(17) and (
+    rr(15) + rr(18) - rr(22) - rr(23) === rr(20) and (rr(20) >= (0).Integer and (rr(24) === rr(7) * rr(17) and (rr(
+    25) === rr(3) * rr(17) and (rr(16) + rr(19) - rr(24) - rr(25) === rr(21) and (rr(21) >= (0).Integer and (rr(17)
+    > (0).Integer and (rr(18) === rr(2) * rr(17) and (rr(13) - rr(18) === rr(15) and (rr(15) >= (0).Integer and (rr(
+    19) === rr(1) * rr(17) and (rr(14) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(1) === (0).Integer and
+    (rr(2) === (1).Integer and (rr(3) === (1).Integer and (rr(4) === (0).Integer and (rr(5) === (10).Integer and (
+    rr(6) === (0).Integer and (rr(7) === (0).Integer and (rr(8) === (1).Integer and (rr(9) === (0).Integer and (rr(
+    10) === (1).Integer and (rr(11) === (0).Integer and (rr(12) === (1).Integer and (rr(13) === (100).Integer and (
+    rr(14) === (200).Integer and true))))))))))))))))))))))))))))))))))))))))))))) ! 2 ! 0
+
+
+==================== Bounding Both ==================
+
+search [1] in TLS-RENEGOTIATION : tls1(1,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 13)
+states: 14  rewrites: 14880 in 184ms cpu (185ms real) (80474 rewrites/second)
+conf:Config --> ([S(0),2 | px(PR(1), ND(1), rr(17), 0) | PR(1) | rr(21)] [SC(0),27,1 | none | msg(tt(6) + tw(2) ;
+    PR(1),0 <- timeout(rr(25), rr(23)))] [I(0),3 | px(PR(1), ND(1), rr(17), 0) | PR(1) | rr(26) | tw(4)]) ! tt(7) !
+    depleted(S(0), rr(21), tt(6)) ! tt(7) < tt(6) + tw(2) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(7) >=
+    tt(6) + tw(4) and (tt(5) + tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real
+    and (tt(5) >= tt(4) and (tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (1000/1).Real and (tw(2)
+    === (1000/1).Real and (tw(3) === (10/1).Real and true))))))))))))) ! rr(20) + rr(22) === rr(26) and (rr(22) ===
+    rr(8) * rr(17) and (rr(23) === rr(4) * rr(17) and (rr(15) + rr(18) - rr(22) - rr(23) === rr(20) and (rr(20) >= (
+    0).Integer and (rr(24) === rr(7) * rr(17) and (rr(25) === rr(3) * rr(17) and (rr(16) + rr(19) - rr(24) - rr(25)
+    === rr(21) and (rr(21) >= (0).Integer and (rr(17) > (0).Integer and (rr(18) === rr(2) * rr(17) and (rr(13) - rr(
+    18) === rr(15) and (rr(15) >= (0).Integer and (rr(19) === rr(1) * rr(17) and (rr(14) - rr(19) === rr(16) and (
+    rr(16) >= (0).Integer and (rr(1) === (0).Integer and (rr(2) === (1).Integer and (rr(3) === (1).Integer and (rr(
+    4) === (0).Integer and (rr(5) === (10).Integer and (rr(6) === (0).Integer and (rr(7) === (0).Integer and (rr(8)
+    === (1).Integer and (rr(9) === (0).Integer and (rr(10) === (1).Integer and (rr(11) === (0).Integer and (rr(12)
+    === (1).Integer and (rr(13) === (100).Integer and (rr(14) === (100).Integer and
+    true))))))))))))))))))))))))))))) ! 1 ! 1
+
+-----------------------------------------
+
+search [1] in TLS-RENEGOTIATION : tls2(2,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 1198)
+states: 1199  rewrites: 7681239 in 82405ms cpu (82965ms real) (93213 rewrites/second)
+conf:Config --> ([S(0),4 | px(PR(1), ND(1), rr(17), 0) px(PR(1), ND(1), rr(29), 1) | PR(1) | rr(33)] [SC(0),39,2 |
+    none | msg(tt(6) + tw(2) ; PR(1),0 <- timeout(rr(25), rr(23))) msg(tt(9) + tw(2) ; PR(1),1 <- timeout(rr(37),
+    rr(35)))] [I(0),6 | px(PR(1), ND(1), rr(17), 0) px(PR(1), ND(1), rr(29), 1) | PR(1) | rr(38) | tw(4)]) ! tt(10)
+    ! depleted(S(0), rr(33), tt(9)) ! tt(10) < tt(6) + tw(2) and (tt(10) < tt(9) + tw(2) and (tt(10) >= (0/1).Real
+    and (tt(10) >= tt(9) and (tt(10) >= tt(9) + tw(4) and (tt(9) < tt(6) + tw(2) and (tt(8) + tw(1) > tt(9) and (tt(
+    9) >= (0/1).Real and (tt(9) >= tt(8) and (tt(8) < tt(6) + tw(2) and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and
+    (tt(7) < tt(6) + tw(2) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(7) >= tt(6) + tw(4) and (tt(5) + tw(
+    1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4)
+    >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (1000/1).Real and (tw(2) === (1000/1).Real and (tw(3)
+    === (10/1).Real and true))))))))))))))))))))))))) ! rr(32) + rr(34) === rr(38) and (rr(34) === rr(8) * rr(29)
+    and (rr(35) === rr(4) * rr(29) and (rr(27) + rr(30) - rr(34) - rr(35) === rr(32) and (rr(32) >= (0).Integer and
+    (rr(36) === rr(7) * rr(29) and (rr(37) === rr(3) * rr(29) and (rr(28) + rr(31) - rr(36) - rr(37) === rr(33) and
+    (rr(33) >= (0).Integer and (rr(29) > (0).Integer and (rr(30) === rr(2) * rr(29) and (rr(26) - rr(30) === rr(27)
+    and (rr(27) >= (0).Integer and (rr(31) === rr(1) * rr(29) and (rr(21) - rr(31) === rr(28) and (rr(28) >= (
+    0).Integer and (rr(20) + rr(22) === rr(26) and (rr(22) === rr(8) * rr(17) and (rr(23) === rr(4) * rr(17) and (
+    rr(15) + rr(18) - rr(22) - rr(23) === rr(20) and (rr(20) >= (0).Integer and (rr(24) === rr(7) * rr(17) and (rr(
+    25) === rr(3) * rr(17) and (rr(16) + rr(19) - rr(24) - rr(25) === rr(21) and (rr(21) >= (0).Integer and (rr(17)
+    > (0).Integer and (rr(18) === rr(2) * rr(17) and (rr(13) - rr(18) === rr(15) and (rr(15) >= (0).Integer and (rr(
+    19) === rr(1) * rr(17) and (rr(14) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(1) === (0).Integer and
+    (rr(2) === (1).Integer and (rr(3) === (1).Integer and (rr(4) === (0).Integer and (rr(5) === (10).Integer and (
+    rr(6) === (0).Integer and (rr(7) === (0).Integer and (rr(8) === (1).Integer and (rr(9) === (0).Integer and (rr(
+    10) === (1).Integer and (rr(11) === (0).Integer and (rr(12) === (1).Integer and (rr(13) === (100).Integer and (
+    rr(14) === (200).Integer and true))))))))))))))))))))))))))))))))))))))))))))) ! 2 ! 1
+
+

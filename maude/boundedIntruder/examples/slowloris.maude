@@ -1,0 +1,484 @@
+mod SLOWLORIS is
+  inc EXE .
+
+  vars pxsB msgs1B : Nat .
+
+  ops initSlow1 initSlow2 initSlow3 initSlow4 initSlow5 : Nat Nat -> Config .
+
+  eq rMin = 0 .
+
+  op Threshold : -> TSymReal .
+  eq Threshold = tw(3) .
+
+  eq initSlow1(pxsB,msgs1B) = [ I(0), 0 | none | PR(1) | rr(3) | tw(4) ]
+                 [ S(0), 0 | none | PR(1) | rr(4) ]
+                 [ SC(0), 5 , 0 | none | none ] ! tt(4) ! none !
+                 ( ( tt(4) >= 0/1   ) and
+                 ( ( tw(4) === 10/1 ) and
+                 ( ( tw(1) === 12/1 ) and
+                 ( ( tw(2) === 1/1  ) and
+                 ( ( tw(3) === 2/1   )  and (true)))))) !
+                 ( ( rr(1) === 1  )  and
+                 ( ( rr(2) === 0  )  and
+                 ( ( rr(3) === 100 ) and
+                 ( ( rr(4) === 100 ) and (true)))))
+                 ! pxsB ! msgs1B .
+
+  eq initSlow2(pxsB,msgs1B) = [ I(0), 0 | none | PR(1) | rr(3) | tw(4) ]
+                 [ S(0), 0 | none | PR(1) | rr(4) ]
+                 [ SC(0), 5 , 0 | none | none ] ! tt(4) ! none !
+                 ( ( tt(4) >= 0/1   ) and
+                 ( ( tw(4) === 10/1 ) and
+                 ( ( tw(1) === 12/1 ) and
+                 ( ( tw(2) === 1/1  ) and
+                 ( ( tw(3) === 12/1   )  and (true)))))) !
+                 ( ( rr(1) === 1  )  and
+                 ( ( rr(2) === 0  )  and
+                 ( ( rr(3) === 100 ) and
+                 ( ( rr(4) === 100 ) and (true))))) ! pxsB ! msgs1B .
+
+  eq initSlow3(pxsB,msgs1B) = [ I(0), 0 | none | PR(1) | rr(3) | tw(4) ]
+                 [ S(0), 0 | none | PR(1) | rr(4) ]
+                 [ SC(0), 5 , 0 | none | none ] ! tt(4) ! none !
+                 ( ( tt(4) >= 0/1   ) and
+                 ( ( tw(4) === 10/1 ) and
+                 ( ( tw(1) === 12/1 ) and
+                 ( ( tw(2) === 1/1  ) and
+                 ( ( tw(3) === 24/1   )  and (true)))))) !
+                 ( ( rr(1) === 1  )  and
+                 ( ( rr(2) === 0  )  and
+                 ( ( rr(3) === 100 ) and
+                 ( ( rr(4) === 100 ) and (true))))) ! pxsB ! msgs1B .
+
+  eq initSlow4(pxsB,msgs1B) = [ I(0), 0 | none | PR(1) | rr(3) | tw(4) ]
+                 [ S(0), 0 | none | PR(1) | rr(4) ]
+                 [ SC(0), 5 , 0 | none | none ] ! tt(4) ! none !
+                 ( ( tt(4) >= 0/1   ) and
+                 ( ( tw(4) === 10/1 ) and
+                 ( ( tw(1) === 12/1 ) and
+                 ( ( tw(2) === 1/1  ) and
+                 ( ( tw(3) === 36/1   )  and (true)))))) !
+                 ( ( rr(1) === 1  )  and
+                 ( ( rr(2) === 0  )  and
+                 ( ( rr(3) === 100 ) and
+                 ( ( rr(4) === 100 ) and (true))))) ! pxsB ! msgs1B .
+
+
+  eq initSlow5(pxsB,msgs1B) = [ I(0), 0 | none | PR(1) | rr(3) | tw(4) ]
+                 [ S(0), 0 | none | PR(1) | rr(4) ]
+                 [ SC(0), 5 , 0 | none | none ] ! tt(4) ! none !
+                 ( ( tt(4) >= 0/1   ) and
+                 ( ( tw(4) === 10/1 ) and
+                 ( ( tw(1) === 12/1 ) and
+                 ( ( tw(2) === 1/1  ) and
+                 ( ( tw(3) === 48/1   )  and (true)))))) !
+                 ( ( rr(1) === 1  )  and
+                 ( ( rr(2) === 0  )  and
+                 ( ( rr(3) === 100 ) and
+                 ( ( rr(4) === 100 ) and (true))))) ! pxsB ! msgs1B .
+
+eq protInit( PR(1) ) = q(ND(0) ? rr(1) , rr(1) ; tw(1) ) .
+
+eq  protNodes( PR(1)  ) = q(ND(0) ? rr(1), rr(2) ; tw(1) )
+                        q(ND(1) ? rr(1), rr(2) ; tw(1) ) .
+
+eq  protTransitions( PR(1)   ) = < ND(0) ? rr(2), rr(2) ; tw(2) -> ND(0) >
+                                 < ND(0) ? rr(2), rr(1) ; tw(2) -> ND(1) > .
+endm
+
+eof
+
+======== No Bounds ===========
+
+search [1] in SLOWLORIS : initSlow1(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 3)
+states: 4  rewrites: 2251 in 53ms cpu (66ms real) (42438
+    rewrites/second)
+conf:Config --> ([S(0),2 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(
+    11)] [SC(0),16,1 | none | msg(tt(6) + tw(1) ; PR(1),0 <-
+    timeout(rr(15), rr(13))) msg(tt(6) + tw(4) ; PR(1),0 <- recover(
+    I(0), rr(12)))] [I(0),2 | px(PR(1), ND(1), rr(7), 0) | PR(1) |
+    rr(10) | tw(4)]) ! tt(6) ! depleted(S(0), rr(6) ; rr(11), tt(5))
+    ! tt(5) + tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >=
+    tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4) >=
+    (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (12/1).Real
+    and (tw(2) === (1/1).Real and (tw(3) === (2/1).Real and
+    true))))))))) ! rr(12) === rr(1) * rr(7) and (rr(13) === rr(2) *
+    rr(7) and (rr(5) + rr(8) - rr(12) - rr(13) === rr(10) and (rr(
+    10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) ===
+    rr(1) * rr(7) and (rr(6) + rr(9) - rr(14) - rr(15) === rr(11)
+    and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8)
+    === rr(1) * rr(7) and (rr(3) - rr(8) === rr(5) and (rr(5) >= (
+    0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) - rr(9) ===
+    rr(6) and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (
+    rr(2) === (0).Integer and (rr(3) === (100).Integer and (rr(4)
+    === (100).Integer and true)))))))))))))))))) ! 0 ! 0
+
+----------------------------
+
+search [1] in SLOWLORIS : initSlow2(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 17)
+states: 18  rewrites: 15142 in 220ms cpu (222ms real) (68547
+    rewrites/second)
+conf:Config --> ([S(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(
+    17)] [SC(0),22,1 | none | msg(tt(6) + tw(4) ; PR(1),0 <-
+    recover(I(0), rr(12))) msg(tt(7) + tw(1) ; PR(1),0 <- timeout(
+    rr(21), rr(19))) msg(tt(7) + tw(4) ; PR(1),0 <- recover(I(0),
+    rr(18)))] [I(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(16)
+    | tw(4)]) ! tt(7) ! depleted(S(0), rr(6) ; rr(11) ; rr(17), tt(
+    5)) ! tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and (tt(
+    7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(5) + tw(1) > tt(6)
+    and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (
+    0/1).Real and (tt(5) >= tt(4) and (tt(4) >= (0/1).Real and (tw(
+    4) === (10/1).Real and (tw(1) === (12/1).Real and (tw(2) === (
+    1/1).Real and (tw(3) === (12/1).Real and true))))))))))))) ! rr(
+    18) === rr(1) * rr(7) and (rr(19) === rr(2) * rr(7) and (rr(10)
+    + rr(13) - rr(18) - rr(19) === rr(16) and (rr(16) >= (0).Integer
+    and (rr(20) === rr(2) * rr(7) and (rr(21) === rr(1) * rr(7) and
+    (rr(11) + rr(15) - rr(20) - rr(21) === rr(17) and (rr(17) >= (
+    0).Integer and (rr(12) === rr(2) * rr(7) and (rr(13) === rr(2) *
+    rr(7) and (rr(5) + rr(8) - rr(12) - rr(13) === rr(10) and (rr(
+    10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) ===
+    rr(1) * rr(7) and (rr(6) + rr(9) - rr(14) - rr(15) === rr(11)
+    and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8)
+    === rr(1) * rr(7) and (rr(3) - rr(8) === rr(5) and (rr(5) >= (
+    0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) - rr(9) ===
+    rr(6) and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (
+    rr(2) === (0).Integer and (rr(3) === (100).Integer and (rr(4)
+    === (100).Integer and true)))))))))))))))))))))))))) ! 0 ! 0
+
+--------------------------------------
+
+search [1] in SLOWLORIS : initSlow3(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+states: 409  rewrites: 650084 in 7183ms cpu (7217ms real) (90492
+    rewrites/second)
+conf:Config --> ([S(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(17)] [SC(0),
+    23,1 | none | msg(tt(7) + tw(1) ; PR(1),0 <- timeout(rr(21), rr(19))) msg(
+    tt(7) + tw(4) ; PR(1),0 <- recover(I(0), rr(18)))] [I(0),4 | px(PR(1), ND(
+    1), rr(7), 0) | PR(1) | rr(22) | tw(4)]) ! tt(8) ! depleted(S(0), rr(6) ;
+    rr(11) ; rr(17), tt(5)) ! tt(8) < tt(7) + tw(1) and (tt(8) < tt(7) + tw(4)
+    and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and (tt(8) >= tt(6) + tw(4)
+    and (tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and (tt(7) >= (
+    0/1).Real and (tt(7) >= tt(6) and (tt(5) + tw(1) > tt(6) and (tt(6) >= (
+    0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4)
+    and (tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (
+    12/1).Real and (tw(2) === (1/1).Real and (tw(3) === (24/1).Real and
+    true)))))))))))))))))) ! rr(16) + rr(12) === rr(22) and (rr(18) === rr(1) *
+    rr(7) and (rr(19) === rr(2) * rr(7) and (rr(10) + rr(13) - rr(18) - rr(19)
+    === rr(16) and (rr(16) >= (0).Integer and (rr(20) === rr(2) * rr(7) and (
+    rr(21) === rr(1) * rr(7) and (rr(11) + rr(15) - rr(20) - rr(21) === rr(17)
+    and (rr(17) >= (0).Integer and (rr(12) === rr(2) * rr(7) and (rr(13) ===
+    rr(2) * rr(7) and (rr(5) + rr(8) - rr(12) - rr(13) === rr(10) and (rr(10)
+    >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7)
+    and (rr(6) + rr(9) - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer
+    and (rr(7) > (0).Integer and (rr(8) === rr(1) * rr(7) and (rr(3) - rr(8)
+    === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4)
+    - rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and
+    (rr(2) === (0).Integer and (rr(3) === (100).Integer and (rr(4) === (
+    100).Integer and true))))))))))))))))))))))))))) ! 0 ! 0
+
+--------------------------------------
+
+search [1] in SLOWLORIS : initSlow4(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+DNF 
+
+------------------------------
+
+search [1] in SLOWLORIS : initSlow5(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+DNF
+
+=================== MSGS1 Bound ================
+
+search [1] in SLOWLORIS : initSlow1(0,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 3)
+states: 4  rewrites: 2251 in 45ms cpu (45ms real) (49557 rewrites/second)
+conf:Config --> ([S(0),2 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(11)] [SC(0),16,1 | none | msg(tt(6) + tw(1) ; PR(
+    1),0 <- timeout(rr(15), rr(13))) msg(tt(6) + tw(4) ; PR(1),0 <- recover(I(0), rr(12)))] [I(0),2 | px(PR(1), ND(
+    1), rr(7), 0) | PR(1) | rr(10) | tw(4)]) ! tt(6) ! depleted(S(0), rr(6) ; rr(11), tt(5)) ! tt(5) + tw(1) > tt(6)
+    and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4) >= (
+    0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (12/1).Real and (tw(2) === (1/1).Real and (tw(3) === (
+    2/1).Real and true))))))))) ! rr(12) === rr(1) * rr(7) and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12)
+    - rr(13) === rr(10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7) and (
+    rr(6) + rr(9) - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) ===
+    rr(1) * rr(7) and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) -
+    rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (
+    100).Integer and (rr(4) === (100).Integer and true)))))))))))))))))) ! 0 ! 1
+
+---------------------------------------
+
+search [1] in SLOWLORIS : initSlow2(0,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 15)
+states: 16  rewrites: 14829 in 205ms cpu (206ms real) (72333 rewrites/second)
+conf:Config --> ([S(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(17)] [SC(0),22,1 | none | msg(tt(6) + tw(4) ; PR(
+    1),0 <- recover(I(0), rr(12))) msg(tt(7) + tw(1) ; PR(1),0 <- timeout(rr(21), rr(19))) msg(tt(7) + tw(4) ; PR(
+    1),0 <- recover(I(0), rr(18)))] [I(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(16) | tw(4)]) ! tt(7) !
+    depleted(S(0), rr(6) ; rr(11) ; rr(17), tt(5)) ! tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and (tt(7) >=
+    (0/1).Real and (tt(7) >= tt(6) and (tt(5) + tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(
+    5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (
+    12/1).Real and (tw(2) === (1/1).Real and (tw(3) === (12/1).Real and true))))))))))))) ! rr(18) === rr(1) * rr(7)
+    and (rr(19) === rr(2) * rr(7) and (rr(10) + rr(13) - rr(18) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (
+    rr(20) === rr(2) * rr(7) and (rr(21) === rr(1) * rr(7) and (rr(11) + rr(15) - rr(20) - rr(21) === rr(17) and (
+    rr(17) >= (0).Integer and (rr(12) === rr(2) * rr(7) and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12) -
+    rr(13) === rr(10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7) and (
+    rr(6) + rr(9) - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) ===
+    rr(1) * rr(7) and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) -
+    rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (
+    100).Integer and (rr(4) === (100).Integer and true)))))))))))))))))))))))))) ! 0 ! 1
+--------------------------------
+
+search [1] in SLOWLORIS : initSlow3(0,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 276)
+states: 277  rewrites: 589426 in 6893ms cpu (6934ms real) (85506 rewrites/second)
+conf:Config --> ([S(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(17)] [SC(0),23,1 | none | msg(tt(7) + tw(1) ; PR(
+    1),0 <- timeout(rr(21), rr(19))) msg(tt(7) + tw(4) ; PR(1),0 <- recover(I(0), rr(18)))] [I(0),4 | px(PR(1), ND(
+    1), rr(7), 0) | PR(1) | rr(22) | tw(4)]) ! tt(8) ! depleted(S(0), rr(6) ; rr(11) ; rr(17), tt(5)) ! tt(8) < tt(
+    7) + tw(1) and (tt(8) < tt(7) + tw(4) and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and (tt(8) >= tt(6) + tw(4)
+    and (tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(5) +
+    tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(
+    4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (12/1).Real and (tw(2) === (1/1).Real and (tw(3) ===
+    (24/1).Real and true)))))))))))))))))) ! rr(16) + rr(12) === rr(22) and (rr(18) === rr(1) * rr(7) and (rr(19)
+    === rr(2) * rr(7) and (rr(10) + rr(13) - rr(18) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(20) ===
+    rr(2) * rr(7) and (rr(21) === rr(1) * rr(7) and (rr(11) + rr(15) - rr(20) - rr(21) === rr(17) and (rr(17) >= (
+    0).Integer and (rr(12) === rr(2) * rr(7) and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12) - rr(13) ===
+    rr(10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7) and (rr(6) + rr(9)
+    - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) === rr(1) * rr(7)
+    and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) - rr(9) === rr(6)
+    and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (100).Integer and
+    (rr(4) === (100).Integer and true))))))))))))))))))))))))))) ! 0 ! 1
+
+------------------------------
+
+search [1] in SLOWLORIS : initSlow4(0,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+DNF
+
+ ------------------------------
+
+ search [1] in SLOWLORIS : initSlow5(0,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+DNF
+
+=============== bound pxs ==============
+
+search [1] in SLOWLORIS : initSlow1(1,0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 3)
+states: 4  rewrites: 2251 in 46ms cpu (46ms real) (48281 rewrites/second)
+conf:Config --> ([S(0),2 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(11)] [SC(0),16,1 | none | msg(tt(6) + tw(1) ; PR(
+    1),0 <- timeout(rr(15), rr(13))) msg(tt(6) + tw(4) ; PR(1),0 <- recover(I(0), rr(12)))] [I(0),2 | px(PR(1), ND(
+    1), rr(7), 0) | PR(1) | rr(10) | tw(4)]) ! tt(6) ! depleted(S(0), rr(6) ; rr(11), tt(5)) ! tt(5) + tw(1) > tt(6)
+    and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4) >= (
+    0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (12/1).Real and (tw(2) === (1/1).Real and (tw(3) === (
+    2/1).Real and true))))))))) ! rr(12) === rr(1) * rr(7) and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12)
+    - rr(13) === rr(10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7) and (
+    rr(6) + rr(9) - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) ===
+    rr(1) * rr(7) and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) -
+    rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (
+    100).Integer and (rr(4) === (100).Integer and true)))))))))))))))))) ! 1 ! 0
+----------------------------------------
+
+search [1] in SLOWLORIS : initSlow2(1,0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 12)
+states: 13  rewrites: 8654 in 142ms cpu (143ms real) (60538 rewrites/second)
+conf:Config --> ([S(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(17)] [SC(0),22,1 | none | msg(tt(6) + tw(4) ; PR(
+    1),0 <- recover(I(0), rr(12))) msg(tt(7) + tw(1) ; PR(1),0 <- timeout(rr(21), rr(19))) msg(tt(7) + tw(4) ; PR(
+    1),0 <- recover(I(0), rr(18)))] [I(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(16) | tw(4)]) ! tt(7) !
+    depleted(S(0), rr(6) ; rr(11) ; rr(17), tt(5)) ! tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and (tt(7) >=
+    (0/1).Real and (tt(7) >= tt(6) and (tt(5) + tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(
+    5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (
+    12/1).Real and (tw(2) === (1/1).Real and (tw(3) === (12/1).Real and true))))))))))))) ! rr(18) === rr(1) * rr(7)
+    and (rr(19) === rr(2) * rr(7) and (rr(10) + rr(13) - rr(18) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (
+    rr(20) === rr(2) * rr(7) and (rr(21) === rr(1) * rr(7) and (rr(11) + rr(15) - rr(20) - rr(21) === rr(17) and (
+    rr(17) >= (0).Integer and (rr(12) === rr(2) * rr(7) and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12) -
+    rr(13) === rr(10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7) and (
+    rr(6) + rr(9) - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) ===
+    rr(1) * rr(7) and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) -
+    rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (
+    100).Integer and (rr(4) === (100).Integer and true)))))))))))))))))))))))))) ! 1 ! 0
+
+-------------------------------------
+
+search [1] in SLOWLORIS : initSlow3(1,0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 50)
+states: 51  rewrites: 41348 in 610ms cpu (613ms real) (67774 rewrites/second)
+conf:Config --> ([S(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(17)] [SC(0),23,1 | none | msg(tt(7) + tw(1) ; PR(
+    1),0 <- timeout(rr(21), rr(19))) msg(tt(7) + tw(4) ; PR(1),0 <- recover(I(0), rr(18)))] [I(0),4 | px(PR(1), ND(
+    1), rr(7), 0) | PR(1) | rr(22) | tw(4)]) ! tt(8) ! depleted(S(0), rr(6) ; rr(11) ; rr(17), tt(5)) ! tt(8) < tt(
+    7) + tw(1) and (tt(8) < tt(7) + tw(4) and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and (tt(8) >= tt(6) + tw(4)
+    and (tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(5) +
+    tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(
+    4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (12/1).Real and (tw(2) === (1/1).Real and (tw(3) ===
+    (24/1).Real and true)))))))))))))))))) ! rr(16) + rr(12) === rr(22) and (rr(18) === rr(1) * rr(7) and (rr(19)
+    === rr(2) * rr(7) and (rr(10) + rr(13) - rr(18) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(20) ===
+    rr(2) * rr(7) and (rr(21) === rr(1) * rr(7) and (rr(11) + rr(15) - rr(20) - rr(21) === rr(17) and (rr(17) >= (
+    0).Integer and (rr(12) === rr(2) * rr(7) and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12) - rr(13) ===
+    rr(10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7) and (rr(6) + rr(9)
+    - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) === rr(1) * rr(7)
+    and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) - rr(9) === rr(6)
+    and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (100).Integer and
+    (rr(4) === (100).Integer and true))))))))))))))))))))))))))) ! 1 ! 0
+
+---------------------------------------
+
+search [1] in SLOWLORIS : initSlow4(1,0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 774)
+states: 775  rewrites: 1081177 in 12064ms cpu (12137ms real) (89618
+    rewrites/second)
+conf:Config --> ([S(0),4 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(24)] [SC(0),
+    30,1 | none | msg(tt(9) + tw(1) ; PR(1),0 <- timeout(rr(28), rr(26))) msg(
+    tt(9) + tw(4) ; PR(1),0 <- recover(I(0), rr(25)))] [I(0),6 | px(PR(1), ND(
+    1), rr(7), 0) | PR(1) | rr(29) | tw(4)]) ! tt(10) ! depleted(S(0), rr(6) ;
+    rr(11) ; rr(17) ; rr(24), tt(5)) ! tt(10) < tt(9) + tw(1) and (tt(10) < tt(
+    9) + tw(4) and (tt(10) >= (0/1).Real and (tt(10) >= tt(9) and (tt(10) >=
+    tt(7) + tw(4) and (tt(9) < tt(7) + tw(4) and (tt(7) + tw(1) > tt(9) and (
+    tt(9) >= (0/1).Real and (tt(9) >= tt(8) and (tt(8) < tt(7) + tw(1) and (tt(
+    8) < tt(7) + tw(4) and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and (tt(8)
+    >= tt(6) + tw(4) and (tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and
+    (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(5) + tw(1) > tt(6) and (
+    tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5)
+    >= tt(4) and (tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) ===
+    (12/1).Real and (tw(2) === (1/1).Real and (tw(3) === (36/1).Real and
+    true))))))))))))))))))))))))))) ! rr(23) + rr(18) === rr(29) and (rr(25)
+    === rr(1) * rr(7) and (rr(26) === rr(2) * rr(7) and (rr(22) + rr(19) - rr(
+    25) - rr(26) === rr(23) and (rr(23) >= (0).Integer and (rr(27) === rr(2) *
+    rr(7) and (rr(28) === rr(1) * rr(7) and (rr(17) + rr(21) - rr(27) - rr(28)
+    === rr(24) and (rr(24) >= (0).Integer and (rr(16) + rr(12) === rr(22) and (
+    rr(18) === rr(2) * rr(7) and (rr(19) === rr(2) * rr(7) and (rr(10) + rr(13)
+    - rr(18) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(20) === rr(
+    2) * rr(7) and (rr(21) === rr(1) * rr(7) and (rr(11) + rr(15) - rr(20) -
+    rr(21) === rr(17) and (rr(17) >= (0).Integer and (rr(12) === rr(2) * rr(7)
+    and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12) - rr(13) === rr(
+    10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15)
+    === rr(1) * rr(7) and (rr(6) + rr(9) - rr(14) - rr(15) === rr(11) and (rr(
+    11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) === rr(1) * rr(7)
+    and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1)
+    * rr(7) and (rr(4) - rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(1)
+    === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (100).Integer and
+    (rr(4) === (100).Integer and true)))))))))))))))))))))))))))))))))))) ! 1 !
+    0
+-------------------------------
+
+search [1] in SLOWLORIS : initSlow5(1,0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+
+
+============ bound both pxs and msgs ========
+
+search [1] in SLOWLORIS : initSlow1(1,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 3)
+states: 4  rewrites: 2251 in 45ms cpu (46ms real) (49038 rewrites/second)
+conf:Config --> ([S(0),2 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(11)] [SC(0),16,1 | none | msg(tt(6) + tw(1) ; PR(
+    1),0 <- timeout(rr(15), rr(13))) msg(tt(6) + tw(4) ; PR(1),0 <- recover(I(0), rr(12)))] [I(0),2 | px(PR(1), ND(
+    1), rr(7), 0) | PR(1) | rr(10) | tw(4)]) ! tt(6) ! depleted(S(0), rr(6) ; rr(11), tt(5)) ! tt(5) + tw(1) > tt(6)
+    and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4) >= (
+    0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (12/1).Real and (tw(2) === (1/1).Real and (tw(3) === (
+    2/1).Real and true))))))))) ! rr(12) === rr(1) * rr(7) and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12)
+    - rr(13) === rr(10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7) and (
+    rr(6) + rr(9) - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) ===
+    rr(1) * rr(7) and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) -
+    rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (
+    100).Integer and (rr(4) === (100).Integer and true)))))))))))))))))) ! 1 ! 1
+
+--------------------------------------
+
+search [1] in SLOWLORIS : initSlow2(1,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 10)
+states: 11  rewrites: 8294 in 137ms cpu (138ms real) (60242 rewrites/second)
+conf:Config --> ([S(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(17)] [SC(0),22,1 | none | msg(tt(6) + tw(4) ; PR(
+    1),0 <- recover(I(0), rr(12))) msg(tt(7) + tw(1) ; PR(1),0 <- timeout(rr(21), rr(19))) msg(tt(7) + tw(4) ; PR(
+    1),0 <- recover(I(0), rr(18)))] [I(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(16) | tw(4)]) ! tt(7) !
+    depleted(S(0), rr(6) ; rr(11) ; rr(17), tt(5)) ! tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and (tt(7) >=
+    (0/1).Real and (tt(7) >= tt(6) and (tt(5) + tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(
+    5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (
+    12/1).Real and (tw(2) === (1/1).Real and (tw(3) === (12/1).Real and true))))))))))))) ! rr(18) === rr(1) * rr(7)
+    and (rr(19) === rr(2) * rr(7) and (rr(10) + rr(13) - rr(18) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (
+    rr(20) === rr(2) * rr(7) and (rr(21) === rr(1) * rr(7) and (rr(11) + rr(15) - rr(20) - rr(21) === rr(17) and (
+    rr(17) >= (0).Integer and (rr(12) === rr(2) * rr(7) and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12) -
+    rr(13) === rr(10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7) and (
+    rr(6) + rr(9) - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) ===
+    rr(1) * rr(7) and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) -
+    rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (
+    100).Integer and (rr(4) === (100).Integer and true)))))))))))))))))))))))))) ! 1 ! 1
+
+
+------------------------------------------
+
+search [1] in SLOWLORIS : initSlow3(1,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 28)
+states: 29  rewrites: 33258 in 425ms cpu (427ms real) (78116 rewrites/second)
+conf:Config --> ([S(0),3 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(17)] [SC(0),23,1 | none | msg(tt(7) + tw(1) ; PR(
+    1),0 <- timeout(rr(21), rr(19))) msg(tt(7) + tw(4) ; PR(1),0 <- recover(I(0), rr(18)))] [I(0),4 | px(PR(1), ND(
+    1), rr(7), 0) | PR(1) | rr(22) | tw(4)]) ! tt(8) ! depleted(S(0), rr(6) ; rr(11) ; rr(17), tt(5)) ! tt(8) < tt(
+    7) + tw(1) and (tt(8) < tt(7) + tw(4) and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and (tt(8) >= tt(6) + tw(4)
+    and (tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(5) +
+    tw(1) > tt(6) and (tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and (tt(
+    4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) === (12/1).Real and (tw(2) === (1/1).Real and (tw(3) ===
+    (24/1).Real and true)))))))))))))))))) ! rr(16) + rr(12) === rr(22) and (rr(18) === rr(1) * rr(7) and (rr(19)
+    === rr(2) * rr(7) and (rr(10) + rr(13) - rr(18) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(20) ===
+    rr(2) * rr(7) and (rr(21) === rr(1) * rr(7) and (rr(11) + rr(15) - rr(20) - rr(21) === rr(17) and (rr(17) >= (
+    0).Integer and (rr(12) === rr(2) * rr(7) and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12) - rr(13) ===
+    rr(10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15) === rr(1) * rr(7) and (rr(6) + rr(9)
+    - rr(14) - rr(15) === rr(11) and (rr(11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) === rr(1) * rr(7)
+    and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1) * rr(7) and (rr(4) - rr(9) === rr(6)
+    and (rr(6) >= (0).Integer and (rr(1) === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (100).Integer and
+    (rr(4) === (100).Integer and true))))))))))))))))))))))))))) ! 1 ! 1
+
+
+--------------------------------------
+
+search [1] in SLOWLORIS : initSlow4(1,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+Solution 1 (state 146)
+states: 147  rewrites: 537303 in 6402ms cpu (6442ms real) (83920
+    rewrites/second)
+conf:Config --> ([S(0),4 | px(PR(1), ND(1), rr(7), 0) | PR(1) | rr(24)] [SC(0),
+    30,1 | none | msg(tt(9) + tw(1) ; PR(1),0 <- timeout(rr(28), rr(26))) msg(
+    tt(9) + tw(4) ; PR(1),0 <- recover(I(0), rr(25)))] [I(0),6 | px(PR(1), ND(
+    1), rr(7), 0) | PR(1) | rr(29) | tw(4)]) ! tt(10) ! depleted(S(0), rr(6) ;
+    rr(11) ; rr(17) ; rr(24), tt(5)) ! tt(10) < tt(9) + tw(1) and (tt(10) < tt(
+    9) + tw(4) and (tt(10) >= (0/1).Real and (tt(10) >= tt(9) and (tt(10) >=
+    tt(7) + tw(4) and (tt(9) < tt(7) + tw(4) and (tt(7) + tw(1) > tt(9) and (
+    tt(9) >= (0/1).Real and (tt(9) >= tt(8) and (tt(8) < tt(7) + tw(1) and (tt(
+    8) < tt(7) + tw(4) and (tt(8) >= (0/1).Real and (tt(8) >= tt(7) and (tt(8)
+    >= tt(6) + tw(4) and (tt(7) < tt(6) + tw(4) and (tt(6) + tw(1) > tt(7) and
+    (tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(5) + tw(1) > tt(6) and (
+    tt(6) >= (0/1).Real and (tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5)
+    >= tt(4) and (tt(4) >= (0/1).Real and (tw(4) === (10/1).Real and (tw(1) ===
+    (12/1).Real and (tw(2) === (1/1).Real and (tw(3) === (36/1).Real and
+    true))))))))))))))))))))))))))) ! rr(23) + rr(18) === rr(29) and (rr(25)
+    === rr(1) * rr(7) and (rr(26) === rr(2) * rr(7) and (rr(22) + rr(19) - rr(
+    25) - rr(26) === rr(23) and (rr(23) >= (0).Integer and (rr(27) === rr(2) *
+    rr(7) and (rr(28) === rr(1) * rr(7) and (rr(17) + rr(21) - rr(27) - rr(28)
+    === rr(24) and (rr(24) >= (0).Integer and (rr(16) + rr(12) === rr(22) and (
+    rr(18) === rr(2) * rr(7) and (rr(19) === rr(2) * rr(7) and (rr(10) + rr(13)
+    - rr(18) - rr(19) === rr(16) and (rr(16) >= (0).Integer and (rr(20) === rr(
+    2) * rr(7) and (rr(21) === rr(1) * rr(7) and (rr(11) + rr(15) - rr(20) -
+    rr(21) === rr(17) and (rr(17) >= (0).Integer and (rr(12) === rr(2) * rr(7)
+    and (rr(13) === rr(2) * rr(7) and (rr(5) + rr(8) - rr(12) - rr(13) === rr(
+    10) and (rr(10) >= (0).Integer and (rr(14) === rr(2) * rr(7) and (rr(15)
+    === rr(1) * rr(7) and (rr(6) + rr(9) - rr(14) - rr(15) === rr(11) and (rr(
+    11) >= (0).Integer and (rr(7) > (0).Integer and (rr(8) === rr(1) * rr(7)
+    and (rr(3) - rr(8) === rr(5) and (rr(5) >= (0).Integer and (rr(9) === rr(1)
+    * rr(7) and (rr(4) - rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(1)
+    === (1).Integer and (rr(2) === (0).Integer and (rr(3) === (100).Integer and
+    (rr(4) === (100).Integer and true)))))))))))))))))))))))))))))))))))) ! 1 !
+    1
+
+---------------------------------------
+
+search [1] in SLOWLORIS : initSlow5(1,1) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+

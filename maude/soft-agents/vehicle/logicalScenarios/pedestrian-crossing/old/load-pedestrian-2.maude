@@ -1,0 +1,5 @@
+load ../../loadPre
+load decide
+load ../../loadPos
+load scenario-template-veh-ped.maude
+load exp-scenario-crossing-2.maude 

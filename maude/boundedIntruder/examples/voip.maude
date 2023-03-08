@@ -1,0 +1,119 @@
+mod VOIP is
+  inc EXE .
+
+  vars pxsB msgs1B : Nat .
+  ops initVoip initVoip1 initVoip2 initVoip3 : Nat Nat -> Config .
+  eq rMin = 0 .
+
+  op Threshold : -> TSymReal .
+  eq Threshold = tw(3) .
+
+*** twice
+ eq initVoip1(pxsB,msgs1B) = [ I(0), 0 | none | PR(1) | rr(4) | tw(4) ]
+                 [ S(0), 0 | none | PR(1) | rr(5) ]
+                 [ SC(0),6,0 | none | none ] ! tt(4) ! none !
+                 ( ( tt(4) >= 0/1   ) and
+                 ( ( tw(1) === 40/1 ) and
+                 ( ( tw(2) === 1/1000  ) and
+                 ( ( tw(4) === 1/1  ) and
+                 ( ( tw(3) > 0/1   )  and (true)))))) !
+                 ( ( rr(1) === 20  )  and
+                 ( ( rr(2) === 1  )  and
+                 ( ( rr(3) === 0 ) and
+                 ( ( rr(4) === 20 ) and
+                 ( ( rr(5) === 800 ) and (true)))))) ! pxsB ! msgs1B .
+
+*** 3 times
+  eq initVoip2(pxsB,msgs1B) = [ I(0), 0 | none | PR(1) | rr(4) | tw(4) ]
+                 [ S(0), 0 | none | PR(1) | rr(5) ]
+                 [ SC(0),6,0 | none | none ] ! tt(4) ! none !
+                 ( ( tt(4) >= 0/1   ) and
+                 ( ( tw(1) === 40/1 ) and
+                 ( ( tw(2) === 1/1000  ) and
+                 ( ( tw(4) === 1/1  ) and
+                 ( ( tw(3) > 0/1   )  and (true)))))) !
+                 ( ( rr(1) === 20  )  and
+                 ( ( rr(2) === 1  )  and
+                 ( ( rr(3) === 0 ) and
+                 ( ( rr(4) === 20 ) and
+                 ( ( rr(5) === 1200 ) and (true)))))) ! pxsB ! msgs1B .
+
+
+ eq initVoip3(pxsB,msgs1B) = [ I(0), 0 | none | PR(1) | rr(4) | tw(4) ]
+                 [ S(0), 0 | none | PR(1) | rr(5) ]
+                 [ SC(0),6,0 | none | none ] ! tt(4) ! none !
+                 ( ( tt(4) >= 0/1   ) and
+                 ( ( tw(1) === 40/1 ) and
+                 ( ( tw(2) === 1/1000  ) and
+                 ( ( tw(4) === 1/1  ) and
+                 ( ( tw(3) > 0/1   )  and (true)))))) !
+                 ( ( rr(1) === 20  )  and
+                 ( ( rr(2) === 1  )  and
+                 ( ( rr(3) === 0 ) and
+                 ( ( rr(4) === 20 ) and
+                 ( ( rr(5) === 1600 ) and (true)))))) ! pxsB ! msgs1B .
+
+  eq protInit(PR(1)) = q( ND(0) ? rr(1), rr(2) ; tw(1) ) .
+
+  eq protNodes(PR(1)) = q( ND(0) ? rr(1), rr(3) ; tw(1) )
+                        q( ND(1) ? rr(1), rr(3) ; tw(1) )
+                        q( ND(2) ? rr(1), rr(3) ; tw(1) )
+                        q( ND(3) ? rr(1), rr(3) ; tw(1) )
+                        q( ND(4) ? rr(1), rr(3) ; tw(1) )
+                        q( ND(5) ? rr(1), rr(3) ; tw(1) ) .
+
+  eq protTransitions(PR(1)) = < ND(0) ? rr(3), rr(2) ; tw(2) -> ND(1) >
+                              < ND(1) ? rr(3), rr(2) ; tw(2) -> ND(2) >
+                              < ND(2) ? rr(3), rr(2) ; tw(2) -> ND(3) >
+                              < ND(3) ? rr(3), rr(2) ; tw(2) -> ND(4) >
+                              < ND(4) ? rr(3), rr(2) ; tw(2) -> ND(5) > .
+endm
+
+eof
+
+================= No Bounds =============
+
+search [1] in VOIP : initVoip1(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .
+
+
+Solution 1 (state 875)
+states: 876  rewrites: 1583340 in 19114ms cpu (19241ms real) (82834
+    rewrites/second)
+conf:Config --> ([S(0),4 | px(PR(1), ND(1), rr(8), 0) px(PR(1), ND(
+    1), rr(20), 1) | PR(1) | rr(24)] [SC(0),29,2 | none | msg(tt(6)
+    + tw(1) ; PR(1),0 <- timeout(rr(16), rr(14))) msg(tt(9) + tw(1)
+    ; PR(1),1 <- timeout(rr(28), rr(26))) msg(tt(9) + tw(4) ; PR(1),
+    1 <- recover(I(0), rr(25)))] [I(0),5 | px(PR(1), ND(1), rr(8),
+    0) px(PR(1), ND(1), rr(20), 1) | PR(1) | rr(23) | tw(4)]) ! tt(
+    9) ! depleted(S(0), rr(19) ; rr(24), tt(8)) ! tt(9) < tt(6) +
+    tw(1) and (tt(8) + tw(1) > tt(9) and (tt(9) >= (0/1).Real and (
+    tt(9) >= tt(8) and (tt(8) < tt(6) + tw(1) and (tt(8) >= (
+    0/1).Real and (tt(8) >= tt(7) and (tt(7) < tt(6) + tw(1) and (
+    tt(7) >= (0/1).Real and (tt(7) >= tt(6) and (tt(7) >= tt(6) +
+    tw(4) and (tt(5) + tw(1) > tt(6) and (tt(6) >= (0/1).Real and (
+    tt(6) >= tt(5) and (tt(5) >= (0/1).Real and (tt(5) >= tt(4) and
+    (tt(4) >= (0/1).Real and (tw(1) === (40/1).Real and (tw(2) === (
+    1/1000).Real and (tw(4) === (1/1).Real and (tw(3) > (0/1).Real
+    and true)))))))))))))))))))) ! rr(25) === rr(2) * rr(20) and (
+    rr(26) === rr(3) * rr(20) and (rr(18) + rr(21) - rr(25) - rr(26)
+    === rr(23) and (rr(23) >= (0).Integer and (rr(27) === rr(3) *
+    rr(20) and (rr(28) === rr(1) * rr(20) and (rr(19) + rr(22) - rr(
+    27) - rr(28) === rr(24) and (rr(24) >= (0).Integer and (rr(20) >
+    (0).Integer and (rr(21) === rr(2) * rr(20) and (rr(17) - rr(21)
+    === rr(18) and (rr(18) >= (0).Integer and (rr(22) === rr(1) *
+    rr(20) and (rr(12) - rr(22) === rr(19) and (rr(19) >= (
+    0).Integer and (rr(11) + rr(13) === rr(17) and (rr(13) === rr(2)
+    * rr(8) and (rr(14) === rr(3) * rr(8) and (rr(6) + rr(9) - rr(
+    13) - rr(14) === rr(11) and (rr(11) >= (0).Integer and (rr(15)
+    === rr(3) * rr(8) and (rr(16) === rr(1) * rr(8) and (rr(7) + rr(
+    10) - rr(15) - rr(16) === rr(12) and (rr(12) >= (0).Integer and
+    (rr(8) > (0).Integer and (rr(9) === rr(2) * rr(8) and (rr(4) -
+    rr(9) === rr(6) and (rr(6) >= (0).Integer and (rr(10) === rr(1)
+    * rr(8) and (rr(5) - rr(10) === rr(7) and (rr(7) >= (0).Integer
+    and (rr(1) === (20).Integer and (rr(2) === (1).Integer and (rr(
+    3) === (0).Integer and (rr(4) === (20).Integer and (rr(5) === (
+    800).Integer and true))))))))))))))))))))))))))))))))))) ! 0 ! 0
+
+---------------------------
+
+search [1] in VOIP : initVoip2(0, 0) =>* conf:Config such that goal(conf:Config, Threshold) = (true).Bool .

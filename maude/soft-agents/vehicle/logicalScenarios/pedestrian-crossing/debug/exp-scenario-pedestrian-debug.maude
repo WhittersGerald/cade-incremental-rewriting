@@ -1,0 +1,113 @@
+--- load ../load-platooning-simplified.maude
+load ../../../debug/test-timestep.maude 
+load ../../../debug/test-task.maude 
+load ../../../debug/test-checkTimeDur.maude 
+
+ mod DEBUG-SCENARIO-PLATOONING is
+ inc SCENARIO-CROSSING .
+ inc TEST-TIMESTEP .
+ inc TEST-TASK .
+ inc TEST-CHECKTIMEDUR .
+
+--- op asys : -> ASystem .
+eq asys$ = asysPedXLineFixed(3,3/1,2/1,1/1,1/10) .
+
+*** For DoTask debuging
+eq asys@doTask = asysPedXLineFixed(3,3/1,2/1,1/1,1/10) .
+eq id@doTask = v(1) .
+--- red isSat(cond@doTask) .
+
+*** For CheckDur
+eq asys@checkDur 
+   = fixDynamics(asysPedXLineFixed(3,3/1,2/1,1/1,1/10),getIds(asysPedXLineFixed(3,3/1,2/1,1/1,1/10))) .
+eq sp@checkDur = saferSP .
+eq sp1@checkDur = safeSP .
+
+***** DEBUG doEnvAct$ ****
+*** doEnvAct$(t,nzt,evs,{i,ekb,cond} nkb,nkbAcc)
+op nkb1$$ : -> NatKBBooleanSet .
+eq nkb1$$ = doUnitEnvAct(i$,t$,ekb$,evs$,cond$) .
+op nkb2$$ : -> NatKBBooleanSet .
+eq nkb2$$ = filterOkEnv(nkb1$$,none) .
+
+op nkb3$$ : -> NatKBBooleanSet .
+eq nkb3$$ = doEnvAct$(s(t$),nzt$ monus 1,
+                        timeEffect(evs$,1),nkb2$$,none) .
+
+op kbs1$$ : -> KBSet .
+eq kbs1$$ = doUnitEnvAct(t$,ekb$,evs$) .
+
+--- op kbs3$$ : -> KBSet .
+--- eq kbs3$$ = doEnvAct$(s(t$),nzt$ monus 1,
+---                         timeEffect(evs$,1),nkb2$$,none) .
+
+
+***** DEBUG doEAct ****
+op nkb1$$$ : -> NatKBBooleanSet .
+eq nkb1$$$ = {i$,ekb$,cond$} .
+
+op a$$ : -> Action .
+--- eq a$$ = (actSnd(v(0), msg(v(0), v(1), hbl2f(v(0), vv(4, "ag0-speed"), loc(vv(0, "ag0-positionX"), vv(1, "ag0-positionY")), (
+    --- atloc(v(1), loc(vv(2, "ag1-positionX"), vv(3, "ag1-positionY"))) @ 0) (platoon(v(0), v(1)) @ 0) speed(v(1), vv(5, "ag1-speed")) @ 0)) @ 0) @ (0).Zero) (
+    --- actSnd(v(1), msg(v(1), v(0), hbf2l(v(1), vv(5, "ag1-speed"), loc(vv(2, "ag1-positionX"), vv(3, "ag1-positionY")))) @ 0) @ (0).Zero) ({u(1/1),actSpeed(v(
+    --- 0), vv(4, "ag0-speed"), vv(4, "ag0-speed"))} @ (0).Zero) {u(1/1),actSpeed(v(1), vv(5, "ag1-speed"), vv(5, "ag1-speed"))} @ (0).Zero .
+
+--- op nkb2$$$ : -> NatKBBooleanSet .
+--- eq nkb2$$$ 
+---  = doEActX(t$,a$$,nkb1$$$,none) .
+
+*** red doEAct(i$,t$,a$$,ekb$,cond$) .
+
+***  doEAct(n,t,actSpeed(id1,ff0,ff1),ekb,cond0)
+ops n$$ : -> Nat .
+ops t$$ : -> Time .
+ops act$$ : -> Action .
+ops ekb$$ : -> KB .
+ops cond0$$ : -> Boolean .
+
+ops dt&& : -> SymTerm .
+ops kbs$$ : -> KBSet .
+ops nkb$$ : -> NatKBBooleanSet .
+
+eq n$$ = 38 .
+eq t$$ = 0 .
+eq act$$ = actSpeed(v(0), vv(4,
+    "ag0-speed"), vv(4, "ag0-speed")) .
+
+ops badAsg badAsg2 badAsg3 : -> SmtCheckResult .
+ops badAsys2 badAsys3 badAsys4 badAsys44 badAsys5 : -> ASystem .
+
+op spec : -> SPSpec .
+
+
+endm
+
+eof
+
+Recall parameters:
+(vellb0 === 2/1) and (velub0 === 10/1) and 
+   (vellb1 === 2/1) and (velub1 === 10/1) and 
+   (maxacc0 === 2/1) and (maxdec0 === - 2/1) and 
+   (maxacc1 === 2/1) and (maxdec1 === - 2/1) and 
+   (safer0 === 3/1) and (safe0 === 2/1) and 
+   (safer1 === 3/1) and (safe1 === 2/1) and 
+   (bad1 === 1/1) and (bad0 === 1/1) and 
+   (dt === 1/10) .
+
+red getAsg("ag1-positionY" "ag0-positionY" "manh-distance" "ag0-speed" "ag1-speed" "tick-size" "ag0-acc" "ag1-acc" "ag0-Nu-positionY" "ag1-Nu-positionY" "ag1-Nu-speed" "ag0-Nu-speed",asg) .
+(r(vvv(1, "ag0-positionY")) |-> (8/1).Real),
+(r(vvv(3,"ag1-positionY")) |-> (101/100).Real),
+(r(vvv(4, "ag0-speed")) |-> (3/1).Real),
+(r(vvv(5, "ag1-speed")) |-> (3/1).Real),
+(r(vvv(30,"tick-size")) |-> (1/10).Real),
+(r(vvv(38, "manh-distance")) |-> (699/100).Real),
+(r(vvv(52, "ag0-acc")) |-> (0/1).Real),
+(r(vvv(54,"ag0-Nu-speed")) |-> (3/1).Real),
+(r(vvv(58, "ag0-Nu-positionY")) |-> (83/10).Real),
+(r(vvv(61, "ag0-positionY")) |-> (83/10).Real),
+(r(vvv(72, "ag1-acc")) |-> (-2/1).Real),
+(r(vvv(75, "ag1-Nu-speed")) |-> (14/5).Real),
+(r(vvv(79, "ag1-Nu-positionY")) |-> (13/10).Real),
+r(vvv(82, "ag1-positionY")) |-> (13/10).Real
+
+

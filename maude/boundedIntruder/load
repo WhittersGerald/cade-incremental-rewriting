@@ -1,0 +1,3 @@
+load symbolic
+load config
+load exe

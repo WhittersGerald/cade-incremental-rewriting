@@ -1,0 +1,81 @@
+ mod TEST-CHECKTIMEDUR is
+  inc SENSOR-FAULTS .
+  inc ENV-ACTIONS .
+  inc UTILS-VEHICLE .
+
+  ops sp@checkDur sp1@checkDur : -> SP .
+  ops asys@checkDur asys1@checkDur asys2@checkDur 
+      asys3@checkDur asys4@checkDur asys5@checkDur
+      asys6@checkDur : -> ASystem .
+  ops condIniSP@checkDur condDtSP@checkDur 
+      condDt1SPs@checkDur condFinal@checkDur : -> Boolean .
+  ops dt@checkDur dt1@checkDur : -> SymTerm .
+  ops sps1@checkDur : -> SPSet .
+
+  eq dt@checkDur = getTickSize(asys@checkDur) .
+
+  eq asys1@checkDur = enforceSP(sp@checkDur,asys@checkDur) .
+  eq asys2@checkDur = timeStep(asys1@checkDur,dt@checkDur) .
+  eq asys3@checkDur = enforceSP(sp1@checkDur,asys2@checkDur) .
+  eq condDtSP@checkDur = getBoolean(asys3@checkDur) .
+  eq dt1@checkDur = vv(getSymCounter(asys3@checkDur) + 1, "tick-size-alternative") .
+  eq asys4@checkDur 
+   = upSymCounter(asys1@checkDur,getSymCounter(asys3@checkDur) + 2) .
+  eq asys5@checkDur = timeStep(asys4@checkDur,dt1@checkDur) .
+  eq sps1@checkDur = if sp@checkDur == sp1@checkDur then 
+                 sp@checkDur getRelSP(sp@checkDur,none)
+            else sp@checkDur sp1@checkDur fi .
+  eq asys6@checkDur = enforceNoSP(sps1@checkDur,asys5@checkDur) .
+  eq condDt1SPs@checkDur = getBoolean(asys6@checkDur) .
+  eq condFinal@checkDur = condDtSP@checkDur 
+            and (dt1@checkDur <= dt@checkDur) and (dt1@checkDur > 0/1)
+            and condDt1SPs@checkDur .
+
+endm
+
+eof
+
+red condFinal@checkDur .
+red isSat(condFinal@checkDur) .
+
+red getAsg("ag1-positionY" "ag2-positionY" "ag2-positionX" "ag2-speed" "ag1-speed" "tick-size-alternative" "ped-acc" "veh1-acc",isSatModel(asys3@checkDur)) .
+
+
+
+
+
+red getAsg("ag1-positionY" "ag2-positionY" "ag2-positionX" "ag2-speed" "ag1-speed" "tick-size-alternative" "ped-acc" "veh1-acc",isSatModel(asys5@checkDur)) .
+
+(r(vvv(1, "ag1-positionY")) |-> (1/1).Real),
+(r(vvv(2, "ag2-positionX")) |-> (1/1).Real),
+(r(vvv(3, "ag2-positionY")) |-> (9/1).Real),
+(r(vvv(4, "ag1-speed")) |-> (3/1).Real),
+(r(vvv(6, "ag2-speed")) |-> (1/1).Real),
+(r(vvv(22, "veh1-acc")) |-> (-1/1).Real),
+(r(vvv(23, "ped-acc")) |-> (0/1).Real),
+(r(vvv(80, "tick-size-alternative")) |-> (1/8).Real),
+(r(vvv(89, "ag1-positionY")) |-> (175/128).Real),
+(r(vvv(91, "ag1-positionY")) |-> (15/2).Real),
+(r(vvv(93,"ag1-positionY")) |-> (175/128).Real),
+(r(vvv(95, "ag1-positionY")) |-> (7/2).Real),
+(r(vvv(97, "ag1-positionY")) |-> (7/4).Real),
+(r(vvv(106, "ag2-positionX")) |-> (9/8).Real),
+(r(vvv(107, "ag2-positionY")) |-> (9/1).Real),
+(r(vvv(108, "ag2-positionX")) |-> (13/8).Real),
+(r(vvv(109, "ag2-positionY")) |-> (9/1).Real),
+(r(vvv(110, "ag2-positionX")) |-> (9/8).Real),
+(r(vvv(111, "ag2-positionY")) |-> (9/1).Real),
+(r(vvv(112, "ag2-positionX")) |-> (11/8).Real),
+(r(vvv(113,"ag2-positionY")) |-> (9/1).Real),
+(r(vvv(114, "ag2-positionX")) |-> (9/8).Real),
+r(vvv(115, "ag2-positionY")) |-> (9/1).Real
+
+
+
+
+
+red isSatModel(asys5@checkDur) .
+
+
+
+

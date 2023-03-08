@@ -1,0 +1,347 @@
+***( 
+This file rewrite rules for configurations. 
+It does not perform bounded model checking. 
+That is, the number of messages in the scheduler and
+the number of parallel protocol sessions are both unbounded.
+***)
+
+mod EXE is
+  inc META-TIME .
+
+  var iid : Iid .
+  var sid : Sid .
+  var pid : Pid .
+  var sc : SchdId .
+  var schd : Scheduler .
+  var resS : ResourceS .
+  var r1 r2 : Rid .
+  vars i j k l m n n1 n2 n3 band worker : Nat .
+  vars pxsB msgs1B : Nat .
+  vars b b' b2 b2' b3 b3' b3'' b4 b4' b4'' : Boolean .
+  vars timeoutT recovery delay T T1 T2 T3 TRec tNew tOld : TSymReal .
+  vars rs1 rs2 rs3 rs4 rs' rs'' rs1' rsm rSym instances rs3k rs2k rs4k rs5k : RSymInt .
+  vars msg2 msg3 msg1 : Msg .
+  vars msgs msgs2 : MsgS .
+  var pc pc' : PlayerConf .
+  var evt : Event .
+  var conf : Config .
+  vars pxs pxs' : PExecS .
+  vars nds nds' : NodeS .
+  vars str str' str'' : String .
+  var prid : Prid .
+  vars prids prids' : PridS .
+  vars nid nid2 nid3 : Nid .
+  var bl : Bool .
+  var mk : Marker .
+  var mks mks' mks'' : MSet .
+  var trsn : NTransitionS .
+  var rsil : RSymIntL .
+
+op rMin : -> Integer .
+op putMarker : Config -> MSet .
+
+ceq putMarker( [ sid, i | pxs' | prids' | rs1 ] pc ! T ! none ! b ! b2 ! pxsB ! msgs1B ) = depleted(sid, rs1, T)
+if b3' := ( (rs1 <= rMin) and (b2))
+/\ b3 := simplify(b3')
+---/\ metaCheck(['EXE], toVarsB( b3 ))
+--- /\ putMarkerSAT(b3) 
+/\ IncrSAT(b3, 1)
+.
+
+ceq putMarker( [sid, i | pxs' | prids' | rs1] pc ! T ! depleted(sid, rsil ,T1) ! b ! b2 ! pxsB ! msgs1B ) = depleted(sid, rsil ; rs1 ,T1)
+if b3' := toBoolean( rsil ; rs1, b2)
+/\ b3 := simplify(b3')
+---/\ metaCheck(['EXE], toVarsB( b3))
+--- /\ putMarkerSAT(b3) 
+/\ IncrSAT(b3, 1)
+.
+
+eq putMarker( pc ! T ! mks ! b ! b2 ! pxsB ! msgs1B) = none [owise] .
+
+op toBoolean : RSymIntL Boolean -> Boolean .
+eq toBoolean( rs1 ; rsil , b ) = toBoolean( rsil, ((rs1 <= rMin) and (b))) .
+eq toBoolean( nil, b) = b .
+
+op advanceTime : TimeSym MsgS Boolean -> Boolean .
+eq advanceTime(tNew,msg1 msgs,b) = (tNew < getTime(msg1)) and advanceTime(tNew,msgs,b) .
+eq advanceTime(tNew,none,b) = b .
+
+op numPxs : PExecS -> Nat .
+eq numPxs(none) = 0 .
+eq numPxs(px:PExec pxs) = s(numPxs(pxs)) .
+
+op numMsgs : MsgS -> Nat .
+eq numMsgs(none) = 0 .
+eq numMsgs(msg1 msgs) = s(numMsgs(msgs)) .
+
+op remTimeOut : Prid MsgS  -> MsgS .
+eq remTimeOut(prid, msg(t:TSymReal ; prid , n1 <- timeout(rs1,rs2)) msgs2) = msgs2 .
+eq remTimeOut(prid, msgs2) = msgs2 [owise] .
+
+--- timeout(rs1, rs2) denotes that, when the protocol finishes, the server recover rs1 resourcers, and the client rs2 .
+crl[pstart] :
+    [iid, j | pxs  | prid prids |  rr(l) | TRec ]
+    [sid, i | pxs' | prid prids' | rr(m) ]
+    [sc, k, n1 | none | msgs2 ]
+    pc ! tt(n) ! mks ! b ! b2 ! pxsB ! msgs1B 
+    =>
+    [ iid, s j | px(prid, nid, rr(s s k), n1) pxs | prid prids | rr(k) | TRec]
+    [ sid, s i | px(prid, nid, rr(s s k), n1) pxs | prid prids' | rr(s k)]
+    [sc, s s s s s k, s n1 | none | msgs2
+    msg( tt(s n) + timeoutT ; prid , n1 <- timeout( rr(s s s s k), rr(s s s k) ) ) ]
+    pc ! tt(s n) ! mks' ! b3 ! b4 ! pxsB ! msgs1B
+    if (numPxs(pxs) <= pxsB or pxsB == 0)
+    /\ q(nid ? rs1, rs2 ; timeoutT ) := protInit(prid)
+    /\ ((numPxs(pxs) >= 1 and numMsgs(msgs2) >= 1) or n == 4)
+    /\ b3' := ((tt(s n) >= 0/1) and ( (tt(s n) >= tt(n)) and (b)))
+    /\ b3'' := advanceTime(tt(s n),msgs2,b3')
+    --- /\ b3'' := b3'
+    /\ b3 := simplify(b3'')
+    /\ b4' :=  ( ( rr(s s k) > 0) and
+               ( ( rr(s s s k) === rs2 * rr(s s k) ) and
+               ( ( rr(l) - rr(s s s k) === rr(k) ) and
+               ( ( rr(k) >= 0 ) and
+               ( ( rr(s s s s k) === rs1 * rr(s s k) ) and
+               ( ( rr(m) - rr(s s s s k) === rr(s k) )  and
+               (  (rr( s k) >= 0) and (b2))))))))
+    /\ b4 := simplify(b4')
+    ---/\ metaCheck(['EXE], toVarsB(b4))
+    ---/\ metaCheck(['EXE], toVarsB(b3))
+    --- /\ queueSMT(b4, 0)
+    --- /\ queueSMT(b3, 10)
+
+    /\ SystemSAT(b3, b4)
+    
+    /\ mks' := putMarker(     [ iid, s j | px(prid, nid, rr(s s k), n1) pxs | prid prids | rr(k) | TRec]
+                              [ sid, s i | px(prid, nid, rr(s s k), n1) pxs | prid prids' | rr(s k)]
+                              [sc, s s s s s k, s n1 | none | msgs2
+                              msg( tt(s n) + timeoutT ; prid , n1 <- timeout( rr(s s s s k), rr(s s s k) ) ) ]
+                              pc ! tt(s n) ! mks ! b3 ! b4 ! pxsB ! msgs1B ) 
+                              
+     .
+
+crl[pcontinue] :
+  [iid, j | px(prid, nid, instances, n1) pxs | prids |   rr(l) | TRec ]
+  [sid, i | px(prid, nid, instances, n1) pxs' | prids' | rr(m) ]
+  [sc, k, n2 | none | msgs2 msg(T ; prid , n1 <- timeout(rs', rs'') ) ]
+  pc ! tt(n) ! mks ! b ! b2 ! pxsB ! msgs1B
+  =>
+  [iid, s j | px(prid, nid2, instances, n1) pxs | prids | rr(k) | TRec ]
+  [sid, s i | px(prid, nid2, instances, n1) pxs' | prids' | rr( s k) ]
+  [sc, s s s s s s k, n2 | none | msgs2
+  msg( tt(s n) + timeoutT ; prid , n1 <- timeout(rr(s s s s s k), rr(s s s k)))
+  --- msg( tt(s n) + T1 ; prid , n1 <- recover( sid, rr(s s s s k)))
+  msg( tt(s n) + TRec ; prid , n1 <- recover( iid, rr(s s k))) ]
+  pc ! tt(s n) ! mks' ! b3 ! b4 ! pxsB ! msgs1B
+  if (numPxs(px(prid, nid, instances, n1) pxs) <= pxsB or pxsB == 0)
+  /\ < nid ? rs1, rs2 ; T1 -> nid2 > trsn  := protTransitions(prid)
+  /\  q(nid2 ? rs3, rs4 ; timeoutT) nds := protNodes(prid)
+  /\ b3' := (T > tt(s n) and ((tt(s n) >= 0/1) and ( (tt(s n) >= tt(n))  and (b))))
+  /\ b3'' := advanceTime(tt(s n),msgs2,b3')
+  --- /\ b3'' := b3'
+  /\ b3 := simplify(b3'')
+  /\ b4' :=  ( ( rr(s s k) === rs2 * instances ) and
+             ( ( rr(s s s k) === rs4 * instances ) and
+             ( ( rr(l) + rs'' - rr(s s k) - rr(s s s k) === rr(k) ) and
+             ( ( rr(k) >= 0 )  and
+             ( ( rr( s s s s k) === rs1 * instances  ) and
+             ( ( rr( s s s s s k) === rs3 * instances ) and
+             ( ( rr(m) + rs' - rr( s s s s k) - rr(s s s s s k) === rr(s k)  ) and
+             (  (rr(s k) >= 0) and (b2)))))))))
+  /\ b4 := simplify(b4')
+  ---/\ metaCheck(['EXE], toVarsB(b4))
+  ---/\ metaCheck(['EXE], toVarsB(b3))
+  --- /\ queueSMT(b4, 1)
+  --- /\ queueSMT(b3, 11)
+  /\ SystemSAT(b3, b3)
+  
+  /\ mks' := putMarker( [sid, s i | px(prid, nid2, instances, n1) pxs' | prids' | rr( s k) ]
+                           pc ! tt(s n) ! mks ! b3 ! b4 ! pxsB ! msgs1B  ) 
+                           
+ .
+
+crl[ptimeout]:
+    [iid, j | px(prid, nid, rSym, n1) pxs | prids | rr(l) | TRec ]
+    [sid, i | px(prid, nid, rSym, n1) pxs' | prids' | rr(m) ]
+    [sc, k, n2 | msgs msg(T ; prid , n1 <- timeout(rs1, rs2)) | msgs2 ]
+    pc ! tt(n) ! mks ! b ! b2 ! pxsB ! msgs1B
+    =>
+    [iid, s j | pxs | prids |   rr(k) | TRec]
+    [sid, s i | pxs' | prids' | rr(s k) ]
+    [sc, s s k, n2 | msgs | msgs2 ] pc ! tt(n) ! mks' ! b ! b4 ! pxsB ! msgs1B
+    if (numPxs(px(prid, nid, rSym, n1) pxs) <= pxsB or pxsB == 0)
+    /\ (numMsgs(msgs msg(T ; prid , n1 <- timeout(rs1, rs2))) <= msgs1B or msgs1B == 0)  
+    /\ b4' := ( ( rr(m) + rs1  === rr(s k) ) and  ( ( rr(l) + rs2 ===  rr(k) )  and  (b2)))
+    /\ (numMsgs(msgs msgs2) >= 1 or n == 4)
+    /\ b4 := simplify(b4')
+    ---/\ metaCheck(['EXE], toVarsB(b4))
+    --- /\ queueSMT(b4, 2)
+    /\ SystemSAT(true, b4)
+    
+    /\ mks' := putMarker(  [iid, s j | pxs | prids | rr(k) | TRec]
+                           [sid, s i | pxs' | prids' | rr(s k) ]
+                           [sc, s s k, n2 | msgs | msgs2 ] pc ! tt(n) ! mks ! b ! b4 ! pxsB ! msgs1B ) 
+.
+
+
+crl[irecover] :
+    [iid, j | pxs | prids | rr(l) | TRec ]
+    [sc, k, n2 | msgs msg(T ; prid , n1 <- recover(iid, rs3) ) | msgs2 ] pc ! tt(n) ! mks ! b ! b2 ! pxsB ! msgs1B
+    =>
+    [iid, s j | pxs | prids | rr(k) | TRec ]
+    [sc, s k, n2 | msgs | msgs2 ] pc ! tt(n) ! mks ! b ! b4 ! pxsB ! msgs1B
+    if b4' := ( (rr(l) + rs3 === rr(k)) and (b2))
+    /\ (numMsgs(msgs msgs2) >= 1 or n == 4)
+    /\ b4 := simplify(b4')
+    ---/\ metaCheck(['EXE], toVarsB(b4)) 
+    --- /\ queueSMT(b4, 3)
+    /\ SystemSAT(true, b4)
+    .
+
+crl[srecover] :
+  [sid, i | pxs | prids | rr(l) ]
+  [sc, k, n2 | msgs 
+         msg(T ; prid , n1 <- recover(sid, rs3) ) | msgs2 ] pc ! 
+  tt(n) ! mks ! b ! b2 ! pxsB ! msgs1B
+  =>
+  [sid, s i | pxs | prids | rr(k) ]
+  [sc, s k, n2 | msgs | msgs2 ] pc ! tt(n) ! mks' ! b ! b4 ! pxsB ! msgs1B
+  if b4' := ( (rr(l) + rs3 === rr(k)) and (b2))
+  /\ (numMsgs(msgs msgs2) >= 1 or n == 4)
+  /\ b4 := simplify(b4')
+  ---/\ metaCheck(['EXE], toVarsB(b4))
+  --- /\ queueSMT(b4, 4)
+  /\ SystemSAT(true, b4)
+  
+  /\ mks' := putMarker(     [sid, s i | pxs | prids | rr(k) ]
+       [sc, s k, n2 | msgs | msgs2 ] pc ! tt(n) ! mks ! b ! b4 ! pxsB ! msgs1B )  
+       
+  .
+
+crl[buff] :
+    [sc, k, n2 | none | msgs2 msg(T ; prid , n1 <- evt)] pc
+    ! tt(n) ! mks ! b ! b2 ! pxsB ! msgs1B
+    =>
+    schd pc ! tt(s n) ! mks ! b3 ! b2 ! pxsB ! msgs1B
+    if schd := checkMsg([sc, k, n2 | msg(T ; prid , n1 <- evt) | msgs2], b, T)
+    /\ numMsgs(getMsg1(schd)) == msgs1B or msgs1B == 0
+    /\ b3' := ((tt(s n) >= 0/1) and ( (tt(s n) >= tt(n)) and ( (tt(s n) >= T) and (b))))
+    --- /\ numMsgs(getMsg1(schd)) == 1
+    /\ b3'' := advanceTime(tt(s n),getMsg2(schd),b3')
+    --- /\ b3'' := b3'
+    /\ b3 := simplify(b3'')
+    ---/\ metaCheck(['EXE], toVarsB(b3)) 
+ 
+    --- /\ queueSMT(b3, 50)
+    /\ SystemSAT(b3, true)
+
+
+    .
+
+
+  op checkMsg : Scheduler Boolean TSymReal -> Scheduler .
+  ceq checkMsg( [sc, k, n2 | msgs | msg(T1 ; prid , n1  <- evt) msgs2 ], b, T)
+      = checkMsg( [sc, k, n2 | msgs msg(T1 ; prid , n1  <- evt) | msgs2], b, T)
+  if b2 := ((T1 > T) and (b))
+  ---/\ not (metaCheck(['EXE], toVarsB(b2)))
+  ---/\ not checkMsgSAT(b2) 
+  /\ not IncrSAT(b2, 0)
+  .
+
+  eq checkMsg(schd, b, T) = schd [owise] .
+
+op goal : Config TSymReal -> Bool .
+op goal : Config TSymReal RSymInt -> Bool .
+
+
+eq goal(conf, T) = false  [owise] .
+ceq goal( [sid, i | pxs | prids | rs1]
+          [sc, k, n2 | none | msgs2 ]
+           pc ! T ! depleted(sid, rsil ,T3) mks ! b ! b2 ! pxsB ! msgs1B, T1) = true
+if b3' := ( ( T - T3 >= T1   ) and  (b))
+--- /\ b3'' := advanceTime(T,msgs2,b3')
+--- /\ b3'' := b3'
+/\ b3 := simplify(b3')
+---/\ metaCheck(['EXE], toVarsB(b3)) 
+---/\ goalSAT(b3)
+---/\ checkSAT(b3)
+/\ IncrSAT(b3, 0)
+.
+
+--- eq goalCond(conf, T) = false [owise] .
+
+--- ceq goalCond( [sid, i | pxs | prids | rs1]
+---           [sc, k, n2 | none | msgs2 ]
+---            pc ! T ! depleted(sid, rsil ,T3) mks ! b ! b2 ! pxsB ! msgs1B, T1) = b3
+---   if b3' := ( ( T - T3 >= T1   ) and  (b))
+
+---   /\ b3 := simplify(b3') .
+
+
+
+
+op NonIncrSAT : Boolean -> Bool [special (
+    id-hook SpecialHubSymbol (NonIncrSAT arg1)
+  )] .
+
+op IncrSAT : Boolean Nat -> Bool [special (
+    id-hook SpecialHubSymbol (IncrSAT arg1 arg2)
+  )] .
+
+op SystemSAT : Boolean Boolean -> Bool [special (
+    id-hook SpecialHubSymbol (SystemSAT arg1 arg2)
+  )] .
+
+
+
+var bsat : Boolean .
+
+op IncrSAT : Boolean -> Bool .
+
+eq IncrSAT(bsat) = IncrSAT(bsat, 0) .
+
+--- op smtCheck : Boolean -> Bool [special (
+---     id-hook SpecialHubSymbol (smtCheck arg1)
+---   )] .
+
+--- op systemSMTCheck : Boolean Nat Nat -> Bool [special (
+---     id-hook SpecialHubSymbol (systemSMTCheck arg1 arg2 arg3)
+---   )] .
+
+--- op opSMTCheck : Boolean Nat Nat -> Bool [special (
+---     id-hook SpecialHubSymbol (opSMTCheck arg1 arg2 arg3)
+---   )] .
+
+
+--- op queueSMT : Boolean Nat -> Bool [special (
+---     id-hook SpecialHubSymbol (queueSMT arg1 arg2)
+---   )] .
+
+
+--- op checkSAT : Boolean -> Bool [special (
+---     id-hook SpecialHubSymbol (checkSAT arg1)
+---   )] .
+
+--- op putMarkerSAT : Boolean -> Bool [special (
+---     id-hook SpecialHubSymbol (putMarkerSAT arg1)
+---   )] .
+
+--- op checkMsgSAT : Boolean -> Bool [special (
+---     id-hook SpecialHubSymbol (checkMsgSAT arg1)
+---   )] .
+
+--- op goalSAT : Boolean -> Bool [special (
+---     id-hook SpecialHubSymbol (goalSAT arg1)
+---   )] .
+
+--- op SystemSAT : Boolean Boolean -> Bool [special (
+---     id-hook SpecialHubSymbol (SystemSAT arg1 arg2)
+---   )] .
+
+
+--- op printRule : Nat -> Bool [special (
+---     id-hook SpecialHubSymbol (printRule arg1)
+---   )] .
+
+
+endm

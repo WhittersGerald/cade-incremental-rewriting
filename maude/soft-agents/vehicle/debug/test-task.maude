@@ -1,0 +1,159 @@
+ mod TEST-TASK is
+   inc SENSOR-FAULTS .
+   inc ENV-ACTIONS .
+   inc UTILS-VEHICLE .
+   inc SAFETY-PROPERTIES .
+   inc META-SEARCH .
+   inc TICK-DURATION-PROP .
+   inc SOFT-AGENT-RULES .
+  
+   vars kb lkb' : KB .
+   var task  : Task .
+   vars evs ievs devs evs' devs1 : EventSet .
+   var tasks : TaskSet .
+   var doTaskRes : DoTaskResults .
+   var nkbkbbools : NatKBKBBooleanSet .
+   vars skbevkbset skbevkbset0 : SKBEventsKBSet .
+   var k : Nat .
+   var cond2 : Boolean .
+   
+   *** To be provided by the user.
+   op asys@doTask : -> ASystem .
+   op id@doTask : -> Id .
+
+   op aconf@doTask : -> Conf .
+   eq aconf@doTask = getConf(asys@doTask) .
+   op agent@doTask : ->  Agent .
+   eq agent@doTask = getAgent(id@doTask,aconf@doTask) .
+   op ekb@doTask : -> KB .
+   eq ekb@doTask = envKB(aconf@doTask) .
+   
+   op cl@doTask : -> Class .
+   eq cl@doTask = getClass(agent@doTask) .
+   op lkb@doTask : -> KB .
+   eq lkb@doTask = getLKB(agent@doTask) .
+   op sset@doTask : -> SensorSet .
+   eq sset@doTask = getSensors(agent@doTask) .
+
+   op task@doTask : -> Task .
+   eq task@doTask = tick .
+   --- ceq task@doTask = task
+   ---  if ((task @ 0) evs) := getEvs(agent@doTask) .
+   op evs@doTask : -> EventSet .
+   eq evs@doTask = none .
+   --- ceq evs@doTask = evs
+   ---  if (tick @ 0) evs := getAgEvs(agent@doTask) .   
+   op cond@doTask : -> Boolean .
+   eq cond@doTask = getBoolean(ekb@doTask) .
+   op i@doTask : -> Nat .
+   eq i@doTask = getVarNat(ekb@doTask) .
+   op splitEvents@doTask : -> EventsPair .
+   eq splitEvents@doTask = splitEvents(evs@doTask,none) .
+   ops ievs@doTask devs@doTask devs1@doTask : -> EventSet .
+   ceq ievs@doTask = ievs 
+    if {ievs,devs} := splitEvents@doTask .
+   ceq devs@doTask = devs 
+    if {ievs,devs} := splitEvents@doTask .
+   op splitTasks0@doTask : -> TasksEvents .
+   eq splitTasks0@doTask = splitTasks0(devs@doTask,none) .
+   op tasks@doTask : -> TaskSet .
+   ceq tasks@doTask = tasks 
+    if {tasks,devs1} := splitTasks0@doTask .
+   ceq devs1@doTask = devs1 
+    if {tasks,devs1} := splitTasks0@doTask .
+   op readSensors@doTask : -> NatKBKBBooleanSet .
+   eq readSensors@doTask = readSensors(i@doTask,id@doTask,sset@doTask,ekb@doTask) .
+   op nkbkbbool@doTask : -> NatKBKBBoolean .
+   ceq nkbkbbool@doTask = natkb:NatKBKBBoolean
+    if natkb:NatKBKBBoolean nkbkbbools := readSensors@doTask .
+   op nkbkbbools@doTask : -> NatKBKBBooleanSet .
+   ceq nkbkbbools@doTask = nkbkbbools
+    if nkbkbbool@doTask nkbkbbools := readSensors@doTask .
+   op j@doTask : -> Nat .
+   op skb@doTask : -> KB .
+   op ekb'@doTask : -> KB .
+   op cond1@doTask : -> Boolean .
+   eq j@doTask = getNat(nkbkbbool@doTask) .
+   eq skb@doTask = getKB1(nkbkbbool@doTask) .
+   eq ekb'@doTask = getKB2(nkbkbbool@doTask) .
+   eq cond1@doTask = getBoolean(nkbkbbool@doTask) .
+
+   op doTasks@doTask : -> DoTaskResults .
+   eq doTasks@doTask = doTasks(cl@doTask,id@doTask,j@doTask,task@doTask tasks@doTask,
+                    ievs@doTask,devs1@doTask,skb@doTask,lkb@doTask,
+                    cond@doTask and cond1@doTask) .
+   
+   op natkbevs@doTask : -> NatKBEventsKBSet .
+   ceq natkbevs@doTask = res1:NatKBEventsKBSet
+    if res1:NatKBEventsKBSet doTaskRes := doTasks@doTask .  
+   op doTaskRes@doTask : -> DoTaskResults .
+   ceq doTaskRes@doTask = doTaskRes
+    if natkbevs@doTask doTaskRes := doTasks@doTask .
+   op k@doTask : -> Nat .
+   op skbevkbset@doTask : -> SKBEventsKBSet .
+   ceq k@doTask = k
+    if {k,skbevkbset} := natkbevs@doTask .
+   ceq skbevkbset@doTask = skbevkbset
+    if {k,skbevkbset} := natkbevs@doTask .
+   op selectKeK@doTask : -> SKBEventsKBSet .
+   eq selectKeK@doTask = selectKeK(lkb@doTask,skbevkbset@doTask) .
+   op cond2@doTask : -> Boolean .
+   ceq cond2@doTask = cond2 
+    if {lkb',evs',kb,cond2} skbevkbset0 := selectKeK@doTask .
+   op isSat@doTask : -> Bool .
+   eq isSat@doTask = isSat(cond2@doTask) . 
+
+endm
+
+eof
+
+red asys@doTask .
+red id@doTask .
+red agent@doTask .
+red ekb@doTask .
+
+red cl@doTask .
+red lkb@doTask .
+red sset@doTask .
+red task@doTask .
+
+red cond@doTask .
+red i@doTask .
+
+red splitEvents@doTask .
+red ievs@doTask .
+red devs@doTask .
+
+red splitTasks0@doTask .
+
+red readSensors@doTask .
+red nkbkbbool@doTask .
+red nkbkbbools@doTask .
+
+red j@doTask .
+red skb@doTask .
+red ekb'@doTask .
+red cond1@doTask .
+
+red doTasks@doTask .
+
+red natkbevs@doTask .
+red doTaskRes@doTask .
+
+red k@doTask .
+red skbevkbset@doTask .
+
+red cond2@doTask .
+
+red isSat@doTask .
+
+
+
+
+
+
+
+
+
+
+
